@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="caramellatte">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hazelnut — Home Page Redesign</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    :where(.grid, .flex) > * { min-width: 0; }
+    :where(p, h1, h2, h3, h4, h5, h6, li) { overflow-wrap: anywhere; }
+
+    @import url('https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Geist', ui-sans-serif, system-ui, sans-serif; }
+
+    .option-card { cursor: pointer; transition: all 0.2s ease; border: 2px solid transparent; }
+    .option-card:hover { transform: translateY(-2px); }
+    .option-card.selected { border-color: oklch(var(--p)); box-shadow: 0 0 0 4px oklch(var(--p) / 0.15); }
+
+    /* Mock UI styles shared across all designs */
+    .mock-nav { height: 48px; display: flex; align-items: center; padding: 0 20px; gap: 8px; border-bottom: 1px solid; }
+    .mock-logo { font-weight: 600; font-size: 14px; }
+    .mock-tab { font-size: 12px; padding: 4px 10px; border-radius: 6px; }
+    .mock-tab.active { background: rgba(0,0,0,0.08); }
+    .mock-search { border-radius: 10px; border: 1px solid; padding: 8px 12px; font-size: 13px; flex: 1; }
+    .mock-btn { border-radius: 8px; padding: 8px 14px; font-size: 12px; font-weight: 500; cursor: default; }
+    .mock-book-cover { border-radius: 4px; width: 36px; height: 52px; flex-shrink: 0; }
+
+    /* Annotation badges */
+    .problem-badge {
+      position: absolute;
+      background: #ef4444;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 99px;
+      white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    .problem-line {
+      position: absolute;
+      background: #ef4444;
+      height: 1.5px;
+      transform-origin: left center;
+      z-index: 9;
+    }
+
+    /* Subtle scroll */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body class="bg-base-200 min-h-screen">
+
+  <!-- Header -->
+  <div class="bg-base-100 border-b border-base-content/10 sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-base-content">Hazelnut — Home Page Redesign</h1>
+        <p class="text-sm text-base-content/60 mt-0.5">Pick a direction, then annotate what you want changed</p>
+      </div>
+      <div class="badge badge-soft badge-warning">Design Review</div>
+    </div>
+  </div>
+
+  <div class="max-w-6xl mx-auto px-6 py-10 space-y-14">
+
+    <!-- ── SECTION 1: Current problems ── -->
+    <section>
+      <div class="flex items-center gap-3 mb-6">
+        <div class="badge badge-error badge-soft text-sm px-3 py-3 font-semibold">Current State</div>
+        <h2 class="text-lg font-semibold text-base-content">What's not working</h2>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- Current idle state mockup -->
+        <div class="card bg-base-100 card-border shadow-sm overflow-hidden">
+          <div class="card-body p-0">
+            <div class="bg-base-content/5 px-4 py-2 text-xs font-medium text-base-content/50 border-b border-base-content/10">Idle state (before any search)</div>
+            <div class="p-4">
+              <!-- Mock nav -->
+              <div class="mock-nav bg-white border-stone-200 rounded-t-xl mb-0">
+                <span class="mock-logo text-stone-900">Hazelnut</span>
+                <span class="mock-tab active text-stone-600">Home</span>
+                <span class="mock-tab text-stone-400">Explore</span>
+                <span class="mock-tab text-stone-400">Collection</span>
+              </div>
+              <!-- Mock body -->
+              <div class="relative bg-stone-50 rounded-b-xl border border-stone-200 border-t-0 p-5" style="min-height:200px;">
+                <!-- Two-col grid -->
+                <div class="grid grid-cols-2 gap-4 h-full" style="min-height:160px;">
+                  <!-- Left: search -->
+                  <div class="flex flex-col gap-3">
+                    <div class="flex gap-2">
+                      <div class="mock-search bg-white border-stone-300 text-stone-400 flex-1" style="font-size:11px;">Search by title, author, or ISBN…</div>
+                      <div class="mock-btn bg-stone-900 text-white" style="font-size:11px;">Search</div>
+                    </div>
+                    <!-- Faded idle text -->
+                    <div class="flex-1 flex items-center justify-center py-8">
+                      <p style="font-size:11px; color:#c4b9b0;">Search for a book to get started</p>
+                    </div>
+                  </div>
+                  <!-- Right: dashed placeholder -->
+                  <div class="flex items-center justify-center rounded-2xl border-2 border-dashed border-stone-200">
+                    <p style="font-size:11px; color:#c4b9b0;">Select a book to see details</p>
+                  </div>
+                </div>
+
+                <!-- Problem annotations -->
+                <div class="problem-badge" style="top:-10px; left:8px;">① Empty left panel</div>
+                <div class="problem-badge" style="bottom:-10px; right:8px;">② Dashed ghost box</div>
+              </div>
+            </div>
+
+            <!-- Problem list -->
+            <div class="px-4 pb-4 space-y-2">
+              <div class="flex gap-2 items-start">
+                <div class="badge badge-error badge-xs mt-1 shrink-0">①</div>
+                <p class="text-xs text-base-content/70">Left panel is just an undersized search bar over a huge empty void — no brand identity, no invitation to act.</p>
+              </div>
+              <div class="flex gap-2 items-start">
+                <div class="badge badge-error badge-xs mt-1 shrink-0">②</div>
+                <p class="text-xs text-base-content/70">Dashed placeholder box feels like broken UI, not intentional design — looks like something failed to load.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Current results/detail state mockup -->
+        <div class="card bg-base-100 card-border shadow-sm overflow-hidden">
+          <div class="card-body p-0">
+            <div class="bg-base-content/5 px-4 py-2 text-xs font-medium text-base-content/50 border-b border-base-content/10">Results state</div>
+            <div class="p-4">
+              <!-- Mock nav -->
+              <div class="mock-nav bg-white border-stone-200 rounded-t-xl">
+                <span class="mock-logo text-stone-900">Hazelnut</span>
+                <span class="mock-tab active text-stone-600">Home</span>
+                <span class="mock-tab text-stone-400">Explore</span>
+              </div>
+              <div class="bg-stone-50 rounded-b-xl border border-stone-200 border-t-0 p-4" style="min-height:180px;">
+                <div class="grid grid-cols-2 gap-3">
+                  <!-- Left: search + results -->
+                  <div class="flex flex-col gap-2">
+                    <div class="flex gap-1 mb-1">
+                      <div class="mock-search bg-white border-stone-300" style="font-size:10px; color:#374151;">atomic habits</div>
+                      <div class="mock-btn bg-stone-900 text-white" style="font-size:10px; padding:4px 8px;">Search</div>
+                    </div>
+                    <p style="font-size:10px; color:#9ca3af;">3 results</p>
+                    <!-- Book rows -->
+                    <div class="flex items-center gap-2 bg-white border border-stone-500 rounded-xl p-2">
+                      <div class="mock-book-cover bg-amber-200"></div>
+                      <div>
+                        <p style="font-size:10px; font-weight:500; color:#111;">Atomic Habits</p>
+                        <p style="font-size:9px; color:#9ca3af;">James Clear</p>
+                        <p style="font-size:9px; color:#9ca3af;">★ 4.8</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-white border border-stone-200 rounded-xl p-2">
+                      <div class="mock-book-cover bg-stone-200"></div>
+                      <div>
+                        <p style="font-size:10px; font-weight:500; color:#374151;">Good Habits…</p>
+                        <p style="font-size:9px; color:#9ca3af;">Duhigg</p>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Right: detail -->
+                  <div class="bg-white rounded-xl border border-stone-200 p-3 flex flex-col gap-2">
+                    <div class="flex gap-2">
+                      <div class="bg-amber-200 rounded shrink-0" style="width:44px;height:62px;"></div>
+                      <div class="min-w-0">
+                        <p style="font-size:10px;font-weight:600;color:#111;">Atomic Habits</p>
+                        <p style="font-size:9px;color:#9ca3af;">James Clear</p>
+                        <p style="font-size:9px;color:#9ca3af;">★ 4.8 · 2018 · 320 pages</p>
+                        <p style="font-size:9px;color:#6b7280;margin-top:3px;line-height:1.4;">An easy and proven way to build good habits…</p>
+                      </div>
+                    </div>
+                    <p style="font-size:10px;font-weight:600;color:#374151;">What people say</p>
+                    <div class="bg-stone-50 border border-stone-200 rounded-lg p-2">
+                      <p style="font-size:9px;font-style:italic;color:#374151;">"Atomic Habits is a step-by-step manual…"</p>
+                      <p style="font-size:8px;color:#9ca3af;margin-top:3px;">Mark Manson · 2018</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Problems -->
+            <div class="px-4 pb-4 space-y-2">
+              <div class="flex gap-2 items-start">
+                <div class="badge badge-warning badge-xs mt-1 shrink-0">③</div>
+                <p class="text-xs text-base-content/70">Book cards are flat, indistinguishable rectangles — hard to scan at a glance.</p>
+              </div>
+              <div class="flex gap-2 items-start">
+                <div class="badge badge-warning badge-xs mt-1 shrink-0">④</div>
+                <p class="text-xs text-base-content/70">The stone-gray palette has no warmth or personality. Nothing says "Hazelnut" — a name with rich visual associations.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── SECTION 2: Design options ── -->
+    <section>
+      <div class="flex items-center gap-3 mb-2">
+        <div class="badge badge-primary badge-soft text-sm px-3 py-3 font-semibold">Directions</div>
+        <h2 class="text-lg font-semibold text-base-content">Choose a redesign direction</h2>
+      </div>
+      <p class="text-sm text-base-content/60 mb-6">Click a card to select it, then use "Queue this choice" to send it back.</p>
+
+      <form id="direction-form" onsubmit="handleSubmit(event)">
+        <div class="grid md:grid-cols-3 gap-6 mb-6">
+
+          <!-- ── OPTION A: Warm Hero ── -->
+          <label class="option-card card bg-base-100 shadow-sm cursor-pointer" id="card-a" onclick="selectCard('a')">
+            <input type="radio" name="direction" value="A: Warm Hero — centered, brand-first idle state with a hazelnut-toned hero, large search bar, and warm amber accent palette" class="sr-only" />
+            <div class="card-body p-0 overflow-hidden">
+              <!-- Label -->
+              <div class="px-4 pt-4 pb-2 flex items-center justify-between">
+                <div>
+                  <span class="font-semibold text-base-content">A — Warm Hero</span>
+                  <p class="text-xs text-base-content/60 mt-0.5">Centered brand moment, hazelnut warmth</p>
+                </div>
+                <div class="badge badge-soft badge-accent text-xs">Recommended</div>
+              </div>
+
+              <!-- Mock: idle state -->
+              <div class="mx-3 mb-1 rounded-xl overflow-hidden border border-base-content/10" style="font-size:0;">
+                <!-- Nav -->
+                <div style="height:36px;background:#fff;border-bottom:1px solid #e7e5e4;display:flex;align-items:center;padding:0 14px;gap:10px;">
+                  <span style="font-size:11px;font-weight:600;color:#1c1917;">Hazelnut</span>
+                  <span style="font-size:10px;padding:3px 8px;border-radius:5px;background:#f5f0ea;color:#78716c;">Home</span>
+                  <span style="font-size:10px;color:#a8a29e;">Explore</span>
+                  <span style="font-size:10px;color:#a8a29e;">Collection</span>
+                </div>
+                <!-- Hero area -->
+                <div style="background:linear-gradient(160deg,#fdf6ee 0%,#fef3c7 100%);padding:22px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:140px;">
+                  <div style="width:36px;height:36px;background:#d97706;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🌰</div>
+                  <p style="font-size:13px;font-weight:600;color:#1c1917;margin:0;">Your personal library</p>
+                  <p style="font-size:10px;color:#78716c;margin:0;text-align:center;">Discover books. Collect what you love.</p>
+                  <!-- Search bar - large, centered -->
+                  <div style="display:flex;width:100%;max-width:340px;gap:6px;margin-top:4px;">
+                    <div style="flex:1;border:1.5px solid #d97706;border-radius:10px;padding:7px 12px;font-size:10px;color:#a8a29e;background:#fff;">Search title, author, or ISBN…</div>
+                    <div style="background:#d97706;color:#fff;border-radius:8px;padding:7px 12px;font-size:10px;font-weight:500;white-space:nowrap;">Search</div>
+                  </div>
+                  <!-- Suggestion chips -->
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:center;">
+                    <span style="background:#fff;border:1px solid #e7e5e4;color:#78716c;border-radius:99px;padding:2px 8px;font-size:9px;">Atomic Habits</span>
+                    <span style="background:#fff;border:1px solid #e7e5e4;color:#78716c;border-radius:99px;padding:2px 8px;font-size:9px;">Sapiens</span>
+                    <span style="background:#fff;border:1px solid #e7e5e4;color:#78716c;border-radius:99px;padding:2px 8px;font-size:9px;">The Alchemist</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mock: results state -->
+              <div class="mx-3 mb-3 rounded-xl overflow-hidden border border-base-content/10" style="font-size:0;">
+                <div style="background:#fdf6ee;padding:4px 10px;font-size:9px;color:#a8a29e;">After search ↓</div>
+                <div style="display:grid;grid-template-columns:180px 1fr;background:#f9f5f0;padding:8px;gap:8px;min-height:90px;">
+                  <!-- Results -->
+                  <div style="display:flex;flex-direction:column;gap:4px;">
+                    <div style="font-size:9px;color:#a8a29e;padding-left:2px;">3 results</div>
+                    <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #d97706;border-radius:8px;padding:5px;">
+                      <div style="width:22px;height:32px;background:#fde68a;border-radius:3px;flex-shrink:0;"></div>
+                      <div>
+                        <p style="font-size:9px;font-weight:600;color:#1c1917;margin:0;">Atomic Habits</p>
+                        <p style="font-size:8px;color:#a8a29e;margin:0;">James Clear</p>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e7e5e4;border-radius:8px;padding:5px;">
+                      <div style="width:22px;height:32px;background:#ddd;border-radius:3px;flex-shrink:0;"></div>
+                      <div><p style="font-size:9px;color:#78716c;margin:0;">Good Habits…</p></div>
+                    </div>
+                  </div>
+                  <!-- Detail -->
+                  <div style="background:#fff;border-radius:8px;border:1px solid #e7e5e4;padding:7px;">
+                    <div style="display:flex;gap:6px;">
+                      <div style="width:30px;height:42px;background:#fde68a;border-radius:3px;flex-shrink:0;"></div>
+                      <div>
+                        <p style="font-size:9px;font-weight:600;color:#111;margin:0;">Atomic Habits</p>
+                        <p style="font-size:8px;color:#a8a29e;margin:0;">James Clear · ★ 4.8</p>
+                        <p style="font-size:8px;color:#78716c;margin-top:3px;line-height:1.4;">An easy and proven way…</p>
+                      </div>
+                    </div>
+                    <div style="margin-top:5px;background:#fdf6ee;border-radius:5px;padding:4px 6px;">
+                      <p style="font-size:8px;font-style:italic;color:#57534e;margin:0;">"A masterclass in changing habits…"</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Change summary -->
+              <div class="px-4 pb-4 space-y-1.5">
+                <p class="text-xs font-semibold text-base-content/70">Key changes:</p>
+                <ul class="space-y-1 text-xs text-base-content/60">
+                  <li class="flex gap-2"><span class="text-success">✓</span>Full-page hero with brand identity on idle</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Warm amber accent color matching the name</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Suggestion chips to guide first searches</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Review quotes on warm tinted background</li>
+                </ul>
+              </div>
+            </div>
+          </label>
+
+          <!-- ── OPTION B: Clean Focus ── -->
+          <label class="option-card card bg-base-100 shadow-sm cursor-pointer" id="card-b" onclick="selectCard('b')">
+            <input type="radio" name="direction" value="B: Clean Focus — keep the stone palette but fix the layout: centered search hero on idle, remove the dashed box, better card spacing and typography" class="sr-only" />
+            <div class="card-body p-0 overflow-hidden">
+              <div class="px-4 pt-4 pb-2">
+                <span class="font-semibold text-base-content">B — Clean Focus</span>
+                <p class="text-xs text-base-content/60 mt-0.5">Same stone palette, better structure</p>
+              </div>
+
+              <!-- Mock: idle state -->
+              <div class="mx-3 mb-1 rounded-xl overflow-hidden border border-base-content/10" style="font-size:0;">
+                <div style="height:36px;background:#fff;border-bottom:1px solid #e7e5e4;display:flex;align-items:center;padding:0 14px;gap:10px;">
+                  <span style="font-size:11px;font-weight:600;color:#1c1917;">Hazelnut</span>
+                  <span style="font-size:10px;padding:3px 8px;border-radius:5px;background:#f5f5f4;color:#57534e;">Home</span>
+                  <span style="font-size:10px;color:#a8a29e;">Explore</span>
+                  <span style="font-size:10px;color:#a8a29e;">Collection</span>
+                </div>
+                <!-- Centered hero, monochrome -->
+                <div style="background:#fafaf9;padding:28px 20px;display:flex;flex-direction:column;align-items:center;gap:10px;min-height:140px;">
+                  <p style="font-size:15px;font-weight:600;color:#1c1917;margin:0;letter-spacing:-0.3px;">Find your next read</p>
+                  <p style="font-size:10px;color:#a8a29e;margin:0;">Search any title, author, or ISBN</p>
+                  <div style="display:flex;width:100%;max-width:320px;gap:6px;margin-top:6px;">
+                    <div style="flex:1;border:1.5px solid #44403c;border-radius:10px;padding:8px 12px;font-size:10px;color:#a8a29e;background:#fff;">Search…</div>
+                    <div style="background:#1c1917;color:#fff;border-radius:8px;padding:8px 12px;font-size:10px;font-weight:500;">Search</div>
+                  </div>
+                  <!-- Recent reads row -->
+                  <div style="margin-top:8px;display:flex;flex-direction:column;align-items:center;gap:5px;opacity:0.6;">
+                    <p style="font-size:9px;color:#a8a29e;margin:0;">Trending now</p>
+                    <div style="display:flex;gap:5px;">
+                      <div style="width:24px;height:34px;background:#e7e5e4;border-radius:3px;"></div>
+                      <div style="width:24px;height:34px;background:#d6d3d1;border-radius:3px;"></div>
+                      <div style="width:24px;height:34px;background:#c4b5a5;border-radius:3px;"></div>
+                      <div style="width:24px;height:34px;background:#e7e5e4;border-radius:3px;"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mock: results state -->
+              <div class="mx-3 mb-3 rounded-xl overflow-hidden border border-base-content/10" style="font-size:0;">
+                <div style="background:#f5f5f4;padding:4px 10px;font-size:9px;color:#a8a29e;">After search ↓</div>
+                <div style="display:grid;grid-template-columns:160px 1fr;background:#fafaf9;padding:8px;gap:8px;min-height:90px;">
+                  <div style="display:flex;flex-direction:column;gap:4px;">
+                    <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1.5px solid #44403c;border-radius:10px;padding:5px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                      <div style="width:22px;height:32px;background:#d6d3d1;border-radius:3px;flex-shrink:0;"></div>
+                      <div>
+                        <p style="font-size:9px;font-weight:600;color:#1c1917;margin:0;">Atomic Habits</p>
+                        <p style="font-size:8px;color:#a8a29e;margin:0;">James Clear · ★ 4.8</p>
+                      </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:6px;background:#fff;border:1px solid #e7e5e4;border-radius:10px;padding:5px;">
+                      <div style="width:22px;height:32px;background:#ddd;border-radius:3px;flex-shrink:0;"></div>
+                      <div><p style="font-size:9px;color:#78716c;margin:0;">Good Habits…</p></div>
+                    </div>
+                  </div>
+                  <div style="background:#fff;border-radius:10px;border:1px solid #e7e5e4;padding:8px;box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                    <div style="display:flex;gap:6px;">
+                      <div style="width:32px;height:46px;background:#d6d3d1;border-radius:4px;flex-shrink:0;"></div>
+                      <div>
+                        <p style="font-size:9px;font-weight:600;color:#111;margin:0;">Atomic Habits</p>
+                        <p style="font-size:8px;color:#a8a29e;margin:0;">James Clear</p>
+                        <p style="font-size:8px;color:#78716c;margin-top:3px;">★ 4.8 · 2018 · 320 pages</p>
+                      </div>
+                    </div>
+                    <div style="margin-top:5px;border-left:2px solid #e7e5e4;padding-left:6px;">
+                      <p style="font-size:8px;font-style:italic;color:#57534e;margin:0;">"A masterclass in changing habits…"</p>
+                      <p style="font-size:8px;color:#a8a29e;margin:1px 0 0;">Mark Manson</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-4 pb-4 space-y-1.5">
+                <p class="text-xs font-semibold text-base-content/70">Key changes:</p>
+                <ul class="space-y-1 text-xs text-base-content/60">
+                  <li class="flex gap-2"><span class="text-success">✓</span>Centered search on idle, no empty void</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Trending books row as visual filler</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Better card shadows and selection state</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Quote displayed with left border accent</li>
+                </ul>
+              </div>
+            </div>
+          </label>
+
+          <!-- ── OPTION C: Editorial ── -->
+          <label class="option-card card bg-base-100 shadow-sm cursor-pointer overflow-hidden" id="card-c" onclick="selectCard('c')">
+            <input type="radio" name="direction" value="C: Editorial — dark, sophisticated look with rich typography, a left sidebar that stays visible, and a curated grid of featured books on the idle screen" class="sr-only" />
+            <div class="card-body p-0 overflow-hidden">
+              <div class="px-4 pt-4 pb-2">
+                <span class="font-semibold text-base-content">C — Editorial</span>
+                <p class="text-xs text-base-content/60 mt-0.5">Dark, sophisticated, magazine-like</p>
+              </div>
+
+              <!-- Mock: idle state -->
+              <div class="mx-3 mb-1 rounded-xl overflow-hidden border border-base-content/10" style="font-size:0;max-width:100%;">
+                <!-- Dark nav -->
+                <div style="height:36px;background:#1c1917;display:flex;align-items:center;padding:0 14px;gap:10px;overflow:hidden;">
+                  <span style="font-size:11px;font-weight:600;color:#fef3c7;white-space:nowrap;">Hazelnut</span>
+                  <span style="font-size:10px;padding:3px 8px;border-radius:5px;background:#292524;color:#e7e5e4;white-space:nowrap;">Home</span>
+                  <span style="font-size:10px;color:#78716c;white-space:nowrap;">Explore</span>
+                  <span style="font-size:10px;color:#78716c;white-space:nowrap;">Collection</span>
+                </div>
+                <!-- Dark body with sidebar -->
+                <div style="background:#1c1917;display:grid;grid-template-columns:90px 1fr;min-height:130px;overflow:hidden;">
+                  <!-- Left sidebar always open -->
+                  <div style="border-right:1px solid #292524;padding:8px;">
+                    <p style="font-size:8px;font-weight:600;color:#78716c;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 6px;">Search</p>
+                    <div style="border:1px solid #44403c;border-radius:6px;padding:4px 6px;font-size:9px;color:#57534e;background:#292524;margin-bottom:8px;">Type…</div>
+                    <p style="font-size:8px;font-weight:600;color:#78716c;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 5px;">My Lists</p>
+                    <p style="font-size:8px;color:#57534e;margin:2px 0;">Reading now</p>
+                    <p style="font-size:8px;color:#57534e;margin:2px 0;">Want to read</p>
+                    <p style="font-size:8px;color:#57534e;margin:2px 0;">Finished</p>
+                  </div>
+                  <!-- Right: featured grid -->
+                  <div style="padding:8px;">
+                    <p style="font-size:8px;font-weight:600;color:#78716c;text-transform:uppercase;letter-spacing:0.8px;margin:0 0 5px;">Featured this week</p>
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;">
+                      <div style="aspect-ratio:2/3;background:#292524;border-radius:3px;"></div>
+                      <div style="aspect-ratio:2/3;background:#292524;border-radius:3px;"></div>
+                      <div style="aspect-ratio:2/3;background:#44403c;border-radius:3px;"></div>
+                      <div style="aspect-ratio:2/3;background:#292524;border-radius:3px;"></div>
+                    </div>
+                    <div style="margin-top:8px;padding:6px;background:#292524;border-radius:5px;border-left:2px solid #d97706;">
+                      <p style="font-size:8px;color:#e7e5e4;font-weight:500;margin:0;">Editor's pick</p>
+                      <p style="font-size:9px;font-style:italic;color:#a8a29e;margin:2px 0 0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">"The book that changed how I think…"</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mock: results state -->
+              <div class="mx-3 mb-3 rounded-xl overflow-hidden border border-base-content/10" style="font-size:0;max-width:100%;">
+                <div style="background:#292524;padding:4px 10px;font-size:9px;color:#78716c;">After search ↓</div>
+                <div style="background:#1c1917;display:grid;grid-template-columns:90px 1fr;min-height:90px;overflow:hidden;">
+                  <div style="border-right:1px solid #292524;padding:6px;display:flex;flex-direction:column;gap:4px;">
+                    <div style="border:1px solid #44403c;border-radius:5px;padding:3px 5px;font-size:9px;color:#e7e5e4;background:#292524;margin-bottom:2px;">atomic habits</div>
+                    <div style="display:flex;align-items:center;gap:4px;background:#292524;border:1px solid #d97706;border-radius:5px;padding:4px;">
+                      <div style="width:16px;height:22px;background:#44403c;border-radius:2px;flex-shrink:0;"></div>
+                      <p style="font-size:8px;color:#e7e5e4;margin:0;">Atomic Habits</p>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:4px;border:1px solid #44403c;border-radius:5px;padding:4px;">
+                      <div style="width:16px;height:22px;background:#44403c;border-radius:2px;flex-shrink:0;"></div>
+                      <p style="font-size:8px;color:#78716c;margin:0;">Good Habits…</p>
+                    </div>
+                  </div>
+                  <div style="padding:8px;display:flex;flex-direction:column;gap:4px;">
+                    <p style="font-size:9px;font-weight:600;color:#fef3c7;margin:0;">Atomic Habits</p>
+                    <p style="font-size:8px;color:#78716c;margin:0;">James Clear · ★ 4.8 · 2018</p>
+                    <div style="background:#292524;border-radius:5px;padding:5px;border-left:2px solid #d97706;">
+                      <p style="font-size:8px;font-style:italic;color:#a8a29e;margin:0;">"A masterclass in habit formation…"</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-4 pb-4 space-y-1.5">
+                <p class="text-xs font-semibold text-base-content/70">Key changes:</p>
+                <ul class="space-y-1 text-xs text-base-content/60">
+                  <li class="flex gap-2"><span class="text-success">✓</span>Dark mode, rich editorial feel</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Always-visible sidebar with my lists</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Featured books grid on idle</li>
+                  <li class="flex gap-2"><span class="text-success">✓</span>Amber accent for selected & highlights</li>
+                </ul>
+              </div>
+            </div>
+          </label>
+
+        </div>
+
+        <!-- Selected state indicator -->
+        <div id="selection-indicator" class="hidden alert alert-info alert-soft mb-4">
+          <span id="selection-text" class="text-sm font-medium"></span>
+        </div>
+
+        <!-- Queue button -->
+        <div class="flex items-center justify-between">
+          <p class="text-sm text-base-content/50">You can also annotate any element on this page before sending.</p>
+          <button
+            type="submit"
+            data-lavish-action
+            id="queue-btn"
+            class="btn btn-primary btn-lg disabled:opacity-40"
+            disabled
+          >
+            Queue this choice →
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- ── SECTION 3: Specific things to fix ── -->
+    <section>
+      <div class="flex items-center gap-3 mb-5">
+        <div class="badge badge-neutral badge-soft text-sm px-3 py-3 font-semibold">Details</div>
+        <h2 class="text-lg font-semibold text-base-content">Specific issues to address (regardless of direction)</h2>
+      </div>
+
+      <div class="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+
+        <div class="card bg-base-100 card-border card-sm">
+          <div class="card-body gap-2">
+            <div class="badge badge-error badge-soft badge-sm">Critical</div>
+            <h3 class="font-semibold text-sm text-base-content">Idle state void</h3>
+            <p class="text-xs text-base-content/60">Replace the empty panel + dashed ghost box with a real hero — either centered search or curated content.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 card-border card-sm">
+          <div class="card-body gap-2">
+            <div class="badge badge-error badge-soft badge-sm">Critical</div>
+            <h3 class="font-semibold text-sm text-base-content">Search prominence</h3>
+            <p class="text-xs text-base-content/60">The search bar needs to be the first thing the eye lands on, not a small form tucked in the corner.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 card-border card-sm">
+          <div class="card-body gap-2">
+            <div class="badge badge-warning badge-soft badge-sm">Important</div>
+            <h3 class="font-semibold text-sm text-base-content">Book card scannability</h3>
+            <p class="text-xs text-base-content/60">Covers need more visual weight. Rating and year should be styled as metadata chips, not plain text.</p>
+          </div>
+        </div>
+
+        <div class="card bg-base-100 card-border card-sm">
+          <div class="card-body gap-2">
+            <div class="badge badge-warning badge-soft badge-sm">Important</div>
+            <h3 class="font-semibold text-sm text-base-content">Brand color</h3>
+            <p class="text-xs text-base-content/60">"Hazelnut" is a warm, tactile name. The all-gray palette misses it. Even a single amber accent would help.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="border-t border-base-content/10 mt-10 py-6 text-center">
+    <p class="text-xs text-base-content/40">Annotate any element on the page · Select a direction above · Use "Queue this choice" to send feedback</p>
+  </div>
+
+  <script>
+    let selectedValue = '';
+
+    function selectCard(id) {
+      // Deselect all
+      ['a','b','c'].forEach(v => {
+        const el = document.getElementById('card-' + v);
+        el.classList.remove('selected');
+        el.querySelector('input[type=radio]').checked = false;
+      });
+
+      // Select clicked
+      const card = document.getElementById('card-' + id);
+      card.classList.add('selected');
+      const radio = card.querySelector('input[type=radio]');
+      radio.checked = true;
+      selectedValue = radio.value;
+
+      // Update indicator
+      const indicator = document.getElementById('selection-indicator');
+      const text = document.getElementById('selection-text');
+      const labelMap = { a: 'A — Warm Hero', b: 'B — Clean Focus', c: 'C — Editorial' };
+      indicator.classList.remove('hidden');
+      text.textContent = `Selected: Option ${labelMap[id]}`;
+
+      // Enable queue button
+      document.getElementById('queue-btn').disabled = false;
+    }
+
+    function handleSubmit(e) {
+      e.preventDefault();
+      if (!selectedValue) return;
+
+      if (window.lavish) {
+        window.lavish.queuePrompt(
+          'Implement the home page redesign using direction: ' + selectedValue + '. Apply all the specific fixes noted in the "Details" section: fix the idle state void, improve search prominence, improve book card scannability, and add a brand accent color. Implement the changes in src/app/page.tsx and any relevant files.',
+          {
+            tag: 'design-direction',
+            text: 'Direction: ' + selectedValue,
+            data: { question: 'design-direction', answer: selectedValue }
+          }
+        );
+      } else {
+        alert('Selected: ' + selectedValue + '\n\n(lavish-axi not connected — this would queue a prompt in the review session)');
+      }
+    }
+  </script>
+</body>
+</html>

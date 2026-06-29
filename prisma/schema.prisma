@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum EnrichmentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum VerificationStatus {
+  UNVERIFIED
+  VERIFIED
+  FAKE
+}
+
+enum BookmarkStatus {
+  FUTURE_READ
+  ALREADY_READ
+}
+
+// ─── Global / shared tables ───────────────────────────────────────────────────
+
+model BooksCache {
+  isbn13        String    @id
+  volumeId      String    @unique
+  title         String
+  authors       String[]
+  coverUrl      String?
+  rating        Float?
+  publishedYear Int?
+  pageCount     Int?
+  description   String?
+  sourcePayload Json
+  createdAt     DateTime  @default(now())
+
+  enrichment    EnrichmentCache?
+  bookmarks     Bookmark[]
+
+  @@map("books_cache")
+}
+
+// Reviews are stored as a JSON array of objects:
+// { quote_text, attributed_to, source_name, source_url, source_date,
+//   confidence, verification_status: "unverified" | "verified" | "fake" }
+//
+// Reads filter out any review where verification_status = "fake".
+model EnrichmentCache {
+  id          String           @id @default(cuid())
+  isbn13      String           @unique
+  reviews     Json             @default("[]")
+  status      EnrichmentStatus @default(PENDING)
+  retryCount  Int              @default(0)
+  failedAt    DateTime?
+  generatedAt DateTime         @default(now())
+
+  book        BooksCache       @relation(fields: [isbn13], references: [isbn13])
+
+  @@map("enrichment_cache")
+}
+
+// Normalized query → ordered list of isbn13s / volumeIds. TTL ~30 days enforced in app.
+model QueryCache {
+  normalizedQuery String   @id
+  resultIds       String[]
+  cachedAt        DateTime @default(now())
+
+  @@map("query_cache")
+}
+
+// ─── Per-user tables ──────────────────────────────────────────────────────────
+
+model User {
+  id           String     @id @default(cuid())
+  username     String     @unique
+  passwordHash String
+  createdAt    DateTime   @default(now())
+
+  bookmarks    Bookmark[]
+
+  @@map("users")
+}
+
+model Bookmark {
+  id             String         @id @default(cuid())
+  userId         String
+  isbn13         String
+  status         BookmarkStatus
+  personalNote   String?
+  personalRating Int?
+  dateRead       DateTime?
+  tags           String[]       @default([])
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book           BooksCache     @relation(fields: [isbn13], references: [isbn13])
+
+  @@unique([userId, isbn13])
+  @@map("bookmarks")
+}
