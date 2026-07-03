@@ -114,23 +114,14 @@ export default function HomePage() {
   // ── Hero states: idle, loading, empty, error ──────────────────────────
   if (state === "idle" || state === "loading" || state === "empty" || state === "error") {
     return (
-      <main
-        className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-4 pb-16"
-        style={{
-          background: `
-            radial-gradient(ellipse 80% 60% at 50% 70%, rgba(30, 58, 138, 0.28) 0%, transparent 70%),
-            radial-gradient(ellipse 50% 40% at 30% 30%, rgba(15, 30, 80, 0.4) 0%, transparent 60%),
-            #0d1117
-          `,
-        }}
-      >
+      <main className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-4 pb-16">
         <div className="w-full max-w-2xl">
-          <h1 className="text-4xl font-light text-[#e8eaf0] text-center mb-10 tracking-tight leading-snug">
+          <h1 className="font-display italic text-4xl font-medium text-[#f4ede1] text-center mb-10 leading-snug pb-1">
             Find your next great read
           </h1>
 
           <form onSubmit={handleSearch}>
-            <div className="flex items-center gap-3 bg-[#1e2433] border border-[#2a3040] rounded-full px-5 py-3.5 focus-within:border-white/20 focus-within:shadow-lg focus-within:shadow-black/30 transition-all">
+            <div className="flex items-center gap-3 bg-[#211a14] border border-[rgba(255,214,170,0.09)] rounded-full px-5 py-3.5 focus-within:border-[rgba(255,214,170,0.25)] focus-within:shadow-lg focus-within:shadow-black/30 transition-all">
               <input
                 ref={inputRef}
                 type="search"
@@ -139,19 +130,19 @@ export default function HomePage() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 disabled={state === "loading"}
-                className="flex-1 bg-transparent border-none outline-none text-base text-[#e8eaf0] placeholder:text-[#9ca3af] disabled:opacity-60"
+                className="flex-1 bg-transparent border-none outline-none text-base text-[#f4ede1] placeholder:text-[#6f6255] disabled:opacity-60"
               />
               {state === "loading" ? (
                 <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                  <div className="w-4 h-4 rounded-full border-2 border-white/20 border-t-[#3b5bdb] animate-spin" />
+                  <div className="w-4 h-4 rounded-full border-2 border-white/10 border-t-[#e0984a] animate-spin" />
                 </div>
               ) : query.trim() ? (
                 <button
                   type="submit"
-                  className="w-9 h-9 rounded-full bg-[#3b5bdb] hover:bg-[#4c6ef5] flex items-center justify-center transition-all shrink-0"
+                  className="w-9 h-9 rounded-full bg-[#e0984a] hover:bg-[#f0ac63] flex items-center justify-center transition-all shrink-0"
                   aria-label="Search"
                 >
-                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="white" strokeWidth={2.5}>
+                  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="#1a1208" strokeWidth={2.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 10.5l7-7 7 7M12 3.5v17" />
                   </svg>
                 </button>
@@ -159,7 +150,7 @@ export default function HomePage() {
             </div>
 
             {state === "empty" && (
-              <p className="text-center text-[#6b7280] text-sm mt-6">
+              <p className="text-center text-[#ab9c8a] text-sm mt-6">
                 No books found for &ldquo;{query}&rdquo;
               </p>
             )}
@@ -186,19 +177,21 @@ export default function HomePage() {
       <div className="flex items-center gap-3 mb-5">
         <button
           onClick={resetToIdle}
-          className="text-[#4b5563] hover:text-[#9ca3af] transition text-sm"
+          className="w-8 h-8 -ml-1.5 rounded-full flex items-center justify-center text-[#ab9c8a] hover:text-[#f4ede1] hover:bg-white/5 transition shrink-0"
           aria-label="New search"
         >
-          ←
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
         </button>
-        <p className="text-sm text-[#6b7280]">
-          <span className="font-medium text-[#e8eaf0]">{results.length}</span>{" "}
+        <p className="text-sm text-[#ab9c8a]">
+          <span className="font-semibold text-[#f4ede1]">{results.length}</span>{" "}
           result{results.length !== 1 ? "s" : ""} for{" "}
-          <span className="font-medium text-[#e8eaf0]">&ldquo;{query}&rdquo;</span>
+          <span className="font-semibold text-[#f4ede1]">&ldquo;{query}&rdquo;</span>
         </p>
         <button
           onClick={resetToIdle}
-          className="ml-auto text-xs text-[#4b5563] hover:text-[#9ca3af] transition"
+          className="ml-auto text-xs font-medium px-3 py-1.5 rounded-full bg-white/5 text-[#ab9c8a] hover:text-[#f4ede1] transition"
         >
           New search
         </button>
@@ -207,47 +200,53 @@ export default function HomePage() {
       {/* Two-column grid */}
       <div className="md:grid md:grid-cols-[360px_1fr] md:gap-8 md:items-start">
 
-        {/* ── Left panel: results list ── */}
+        {/* ── Left panel: results list (scrolls independently of the page/detail panel) ── */}
         <div className={showLeft ? "block" : "hidden md:block"}>
-          <div className="space-y-2">
-            {results.map((book) => (
-              <button
-                key={book.volumeId}
-                onClick={() => openBook(book)}
-                className={`w-full flex items-center gap-3 bg-[#1e2433] rounded-xl border p-3 text-left transition shadow-sm ${
-                  selectedBook?.volumeId === book.volumeId
-                    ? "border-[#3b5bdb]/50 ring-1 ring-[#3b5bdb]/20"
-                    : "border-white/[0.08] hover:border-white/15"
-                }`}
-              >
-                {book.coverUrl ? (
-                  <Image
-                    src={book.coverUrl}
-                    alt={book.title}
-                    width={44}
-                    height={62}
-                    className="rounded object-cover shrink-0"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-11 h-[62px] rounded bg-white/[0.06] shrink-0" />
-                )}
-                <div className="min-w-0">
-                  <p className="font-medium text-sm text-[#e8eaf0] truncate">{book.title}</p>
-                  <p className="text-xs text-[#6b7280] truncate mt-0.5">{book.authors.join(", ")}</p>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    {book.rating && (
-                      <span className="inline-flex items-center gap-0.5 text-xs bg-white/10 text-[#9ca3af] rounded-full px-2 py-0.5">
-                        ★ {book.rating}
-                      </span>
-                    )}
-                    {book.publishedYear && (
-                      <span className="text-xs text-[#4b5563]">{book.publishedYear}</span>
-                    )}
+          <div className="custom-scroll space-y-2 md:max-h-[calc(100vh-160px)] md:overflow-y-auto md:pr-1">
+            {results.map((book) => {
+              const selected = selectedBook?.volumeId === book.volumeId;
+              return (
+                <button
+                  key={book.volumeId}
+                  onClick={() => openBook(book)}
+                  className={`relative w-full flex items-center gap-3 rounded-xl border p-3 text-left transition ${
+                    selected
+                      ? "bg-[#e0984a]/[0.12] border-[#e0984a]/35"
+                      : "bg-[#211a14] border-[rgba(255,214,170,0.09)] hover:bg-[#2a2119] hover:border-[rgba(255,214,170,0.18)]"
+                  }`}
+                >
+                  {selected && (
+                    <span className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-full bg-[#e0984a]" />
+                  )}
+                  {book.coverUrl ? (
+                    <Image
+                      src={book.coverUrl}
+                      alt={book.title}
+                      width={44}
+                      height={62}
+                      className="rounded object-cover shrink-0"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-11 h-[62px] rounded bg-white/[0.05] shrink-0" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-display font-medium text-[15px] text-[#f4ede1] truncate">{book.title}</p>
+                    <p className="text-xs text-[#ab9c8a] truncate mt-0.5">{book.authors.join(", ")}</p>
+                    <div className="flex items-center gap-2 mt-1.5">
+                      {book.rating && (
+                        <span className="inline-flex items-center gap-0.5 text-xs bg-[#e0984a]/[0.12] text-[#f0c894] rounded-full px-2 py-0.5 font-medium">
+                          ★ {book.rating}
+                        </span>
+                      )}
+                      {book.publishedYear && (
+                        <span className="text-xs text-[#6f6255]">{book.publishedYear}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
 
@@ -257,16 +256,19 @@ export default function HomePage() {
           {state === "detail" && results.length > 1 && (
             <button
               onClick={() => setState("results")}
-              className="md:hidden text-sm text-[#6b7280] hover:text-[#e8eaf0] mb-4 transition"
+              className="md:hidden flex items-center gap-1.5 text-sm text-[#ab9c8a] hover:text-[#f4ede1] mb-4 transition"
             >
-              ← Back to results
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 12H5M12 19l-7-7 7-7" />
+              </svg>
+              Back to results
             </button>
           )}
 
           {/* Desktop placeholder when no book is selected yet */}
           {!selectedBook && (
-            <div className="hidden md:flex items-center justify-center h-64 rounded-2xl bg-white/[0.03] border border-white/[0.05]">
-              <p className="text-sm text-[#374151]">Select a book to see details</p>
+            <div className="hidden md:flex items-center justify-center h-64 rounded-2xl bg-white/[0.02] border border-[rgba(255,214,170,0.06)]">
+              <p className="text-sm text-[#6f6255]">Select a book to see details</p>
             </div>
           )}
 
@@ -274,7 +276,7 @@ export default function HomePage() {
           {selectedBook && (
             <div>
               {/* Metadata card */}
-              <div className="bg-[#1e2433] rounded-2xl border border-white/[0.08] shadow-sm p-5 flex gap-5 mb-6">
+              <div className="bg-[#211a14] rounded-2xl border border-[rgba(255,214,170,0.09)] p-5 flex gap-5 mb-6">
                 {selectedBook.coverUrl ? (
                   <Image
                     src={selectedBook.coverUrl}
@@ -285,92 +287,96 @@ export default function HomePage() {
                     unoptimized
                   />
                 ) : (
-                  <div className="w-24 h-[136px] rounded-lg bg-white/[0.06] shrink-0" />
+                  <div className="w-24 h-[136px] rounded-lg bg-white/[0.05] shrink-0" />
                 )}
                 <div className="min-w-0">
-                  <h2 className="font-semibold text-lg text-[#e8eaf0] leading-snug mb-1">
+                  <h2 className="font-display italic font-medium text-xl text-[#f4ede1] leading-snug mb-1">
                     {selectedBook.title}
                   </h2>
-                  <p className="text-sm text-[#9ca3af] mb-3">
+                  <p className="text-sm text-[#ab9c8a] mb-3">
                     {selectedBook.authors.join(", ")}
                   </p>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {selectedBook.rating && (
-                      <span className="inline-flex items-center gap-1 text-xs bg-white/10 text-[#9ca3af] rounded-full px-2.5 py-1">
+                      <span className="inline-flex items-center gap-1 text-xs bg-[#e0984a]/[0.12] text-[#f0c894] rounded-full px-2.5 py-1 font-medium">
                         ★ {selectedBook.rating}
                       </span>
                     )}
                     {selectedBook.publishedYear && (
-                      <span className="inline-flex items-center text-xs bg-white/10 text-[#9ca3af] rounded-full px-2.5 py-1">
+                      <span className="inline-flex items-center text-xs bg-white/5 text-[#ab9c8a] rounded-full px-2.5 py-1">
                         {selectedBook.publishedYear}
                       </span>
                     )}
                     {selectedBook.pageCount && (
-                      <span className="inline-flex items-center text-xs bg-white/10 text-[#9ca3af] rounded-full px-2.5 py-1">
+                      <span className="inline-flex items-center text-xs bg-white/5 text-[#ab9c8a] rounded-full px-2.5 py-1">
                         {selectedBook.pageCount} pages
                       </span>
                     )}
                   </div>
                   {selectedBook.description && (
-                    <p className="text-xs text-[#9ca3af] leading-relaxed line-clamp-4">
+                    <p className="text-xs text-[#ab9c8a] leading-relaxed line-clamp-4">
                       {selectedBook.description}
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* What people say */}
-              <h3 className="text-sm font-semibold text-[#6b7280] mb-3">What people say</h3>
-
+              {/* What people say — only shown once there's something to show */}
               {reviewsState === "loading" && (
-                <div className="space-y-3">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="bg-[#1e2433] rounded-xl border border-white/[0.08] p-4 animate-pulse">
-                      <div className="h-3 bg-white/[0.08] rounded w-3/4 mb-2" />
-                      <div className="h-3 bg-white/[0.08] rounded w-1/2" />
-                    </div>
-                  ))}
-                </div>
+                <>
+                  <h3 className="text-sm font-semibold text-[#ab9c8a] mb-3">What people say</h3>
+                  <div className="space-y-3">
+                    {[1, 2].map((i) => (
+                      <div key={i} className="bg-[#211a14] rounded-xl border border-[rgba(255,214,170,0.09)] p-4 animate-pulse">
+                        <div className="h-3 bg-white/[0.06] rounded w-3/4 mb-2" />
+                        <div className="h-3 bg-white/[0.06] rounded w-1/2" />
+                      </div>
+                    ))}
+                  </div>
+                </>
               )}
 
               {reviewsState === "done" && reviews.length === 0 && (
-                <p className="text-sm text-[#6b7280]">No notable reviews found yet.</p>
+                <p className="text-sm text-[#6f6255]">No notable reviews found yet.</p>
               )}
 
               {reviewsState === "done" && reviews.length > 0 && (
-                <div className="space-y-3">
-                  {reviews.map((r, i) => (
-                    <div key={i} className="bg-[#1e2433] rounded-xl border border-white/[0.08] shadow-sm p-4">
-                      <p className="text-sm text-[#d1d5db] italic leading-relaxed mb-3">
-                        &ldquo;{r.quote_text}&rdquo;
-                      </p>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="text-xs text-[#6b7280]">
-                          <span className="font-medium text-[#9ca3af]">{r.attributed_to}</span>
-                          {r.source_name && r.source_name !== r.attributed_to && (
-                            <span>, {r.source_name}</span>
-                          )}
-                          {r.source_date && <span> · {r.source_date}</span>}
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {r.source_url && (
-                            <a
-                              href={r.source_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-[#6b7280] hover:text-[#e8eaf0] underline transition"
-                            >
-                              Source
-                            </a>
-                          )}
-                          <span className="text-xs text-[#6b7280] bg-white/5 border border-white/[0.08] rounded px-1.5 py-0.5 capitalize">
-                            {r.verification_status}
-                          </span>
+                <>
+                  <h3 className="text-sm font-semibold text-[#ab9c8a] mb-3">What people say</h3>
+                  <div className="space-y-3">
+                    {reviews.map((r, i) => (
+                      <div key={i} className="bg-[#211a14] rounded-xl border border-[rgba(255,214,170,0.09)] p-4">
+                        <p className="text-sm text-[#f4ede1]/90 italic leading-relaxed mb-3">
+                          &ldquo;{r.quote_text}&rdquo;
+                        </p>
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="text-xs text-[#ab9c8a]">
+                            <span className="font-medium text-[#f4ede1]/80">{r.attributed_to}</span>
+                            {r.source_name && r.source_name !== r.attributed_to && (
+                              <span>, {r.source_name}</span>
+                            )}
+                            {r.source_date && <span> · {r.source_date}</span>}
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            {r.source_url && (
+                              <a
+                                href={r.source_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-[#ab9c8a] hover:text-[#f4ede1] underline transition"
+                              >
+                                Source
+                              </a>
+                            )}
+                            <span className="text-xs text-[#ab9c8a] bg-white/5 border border-[rgba(255,214,170,0.09)] rounded px-1.5 py-0.5 capitalize">
+                              {r.verification_status}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </>
               )}
             </div>
           )}
