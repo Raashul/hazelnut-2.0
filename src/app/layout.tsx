@@ -16,7 +16,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
-      <body className="min-h-full bg-stone-100 text-stone-900 antialiased font-sans">
+      <body className="min-h-full bg-[#0d1117] text-[#e8eaf0] antialiased font-sans">
         <AuthProvider>
           {/* pb-14: space for mobile bottom nav. md:pt-14: space for desktop top nav */}
           <div className="pb-14 md:pb-0 md:pt-14">{children}</div>
