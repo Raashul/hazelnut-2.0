@@ -24,7 +24,7 @@ interface Review {
   verification_status: "unverified" | "verified" | "fake";
 }
 
-type SearchState = "idle" | "loading" | "results" | "detail" | "empty";
+type SearchState = "idle" | "loading" | "results" | "detail" | "empty" | "error";
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
@@ -68,18 +68,28 @@ export default function HomePage() {
     setReviews([]);
     setReviewsState("idle");
 
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
-    const data = await res.json();
-    const books: Book[] = data.results ?? [];
+    try {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json().catch(() => null);
 
-    if (books.length === 0) {
-      setState("empty");
-    } else if (books.length === 1) {
-      setResults(books);
-      openBook(books[0]);
-    } else {
-      setResults(books);
-      setState("results");
+      if (!res.ok || !data) {
+        setState("error");
+        return;
+      }
+
+      const books: Book[] = data.results ?? [];
+
+      if (books.length === 0) {
+        setState("empty");
+      } else if (books.length === 1) {
+        setResults(books);
+        openBook(books[0]);
+      } else {
+        setResults(books);
+        setState("results");
+      }
+    } catch {
+      setState("error");
     }
   }
 
@@ -94,8 +104,8 @@ export default function HomePage() {
 
   useEffect(() => () => esRef.current?.close(), []);
 
-  // ── Hero states: idle, loading, empty ─────────────────────────────────
-  if (state === "idle" || state === "loading" || state === "empty") {
+  // ── Hero states: idle, loading, empty, error ──────────────────────────
+  if (state === "idle" || state === "loading" || state === "empty" || state === "error") {
     return (
       <main
         className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-4 pb-16"
@@ -144,6 +154,13 @@ export default function HomePage() {
             {state === "empty" && (
               <p className="text-center text-[#6b7280] text-sm mt-6">
                 No books found for &ldquo;{query}&rdquo;
+              </p>
+            )}
+
+            {/* Error state */}
+            {state === "error" && (
+              <p className="text-center text-red-400 text-sm mt-8">
+                Something went wrong searching for &ldquo;{query}&rdquo;. Please try again.
               </p>
             )}
           </form>
