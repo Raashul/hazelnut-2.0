@@ -34,9 +34,9 @@ export function AppNav() {
   return (
     <>
       {/* ── Desktop: top nav ── */}
-      <nav className="hidden md:flex fixed top-0 inset-x-0 h-14 bg-[#0d1117]/85 backdrop-blur-md border-b border-white/[0.07] z-50 items-center px-6">
-        <Link href="/" className="text-base font-semibold tracking-tight text-[#e8eaf0] mr-8 shrink-0">
-          Hazelnut
+      <nav className="hidden md:flex fixed top-0 inset-x-0 h-14 bg-[#15110d]/85 backdrop-blur-md border-b border-white/[0.07] z-50 items-center px-6">
+        <Link href="/" className="font-display italic text-lg text-[#f4ede1] mr-8 shrink-0">
+          hazelnut
         </Link>
         <div className="flex items-center gap-1 flex-1">
           {tabs.map((tab) => (
@@ -45,8 +45,8 @@ export function AppNav() {
               href={tabHref(tab)}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 isActive(tab)
-                  ? "bg-white/10 text-[#e8eaf0]"
-                  : "text-[#6b7280] hover:text-[#e8eaf0] hover:bg-white/[0.06]"
+                  ? "bg-[#e0984a]/12 text-[#f0c894]"
+                  : "text-[#ab9c8a] hover:text-[#f4ede1] hover:bg-white/[0.06]"
               }`}
             >
               {tab.label}
@@ -56,10 +56,10 @@ export function AppNav() {
         <div className="shrink-0">
           {user ? (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-[#6b7280]">{user.username}</span>
+              <span className="text-sm text-[#ab9c8a]">{user.username}</span>
               <button
                 onClick={logout}
-                className="text-sm text-[#4b5563] hover:text-[#e8eaf0] transition-colors"
+                className="text-sm text-[#6f6255] hover:text-[#f4ede1] transition-colors"
               >
                 Sign out
               </button>
@@ -67,7 +67,7 @@ export function AppNav() {
           ) : (
             <Link
               href="/login"
-              className="text-sm font-medium text-[#9ca3af] hover:text-[#e8eaf0] transition-colors"
+              className="text-sm font-medium text-[#ab9c8a] hover:text-[#f4ede1] transition-colors"
             >
               Sign in
             </Link>
@@ -76,7 +76,7 @@ export function AppNav() {
       </nav>
 
       {/* ── Mobile: bottom nav ── */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-[#0d1117]/90 backdrop-blur-md border-t border-white/[0.07] z-50">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 bg-[#15110d]/90 backdrop-blur-md border-t border-white/[0.07] z-50">
         <div className="flex">
           {tabs.map((tab) => (
             <Link
@@ -84,8 +84,8 @@ export function AppNav() {
               href={tabHref(tab)}
               className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
                 isActive(tab)
-                  ? "text-[#e8eaf0]"
-                  : "text-[#4b5563] hover:text-[#9ca3af]"
+                  ? "text-[#f0c894]"
+                  : "text-[#6f6255] hover:text-[#ab9c8a]"
               }`}
             >
               {tab.label}
