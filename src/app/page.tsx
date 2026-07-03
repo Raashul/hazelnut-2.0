@@ -36,9 +36,16 @@ export default function HomePage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const esRef = useRef<EventSource | null>(null);
 
-  function triggerEnrichment(volumeId: string) {
+  function triggerEnrichment(book: Book) {
     if (esRef.current) esRef.current.close();
-    const es = new EventSource(`/api/books/${encodeURIComponent(volumeId)}/reviews`);
+    const params = new URLSearchParams({
+      title: book.title,
+      authors: book.authors.join(","),
+      ...(book.isbn13 ? { isbn13: book.isbn13 } : {}),
+    });
+    const es = new EventSource(
+      `/api/books/${encodeURIComponent(book.volumeId)}/reviews?${params.toString()}`
+    );
     esRef.current = es;
 
     es.addEventListener("reviews", (e) => {
@@ -57,7 +64,7 @@ export default function HomePage() {
     setReviews([]);
     setReviewsState("loading");
     setState("detail");
-    triggerEnrichment(book.volumeId);
+    triggerEnrichment(book);
   }
 
   async function handleSearch(e: FormEvent) {
