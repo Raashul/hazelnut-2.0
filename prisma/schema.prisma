@@ -43,8 +43,42 @@ model BooksCache {
 
   enrichment    EnrichmentCache?
   bookmarks     Bookmark[]
+  genres        BookGenre[]
+  exploreBooks  ExploreBook[]
 
   @@map("books_cache")
+}
+
+// Genre membership pool for a book — populated by the manual explore-catalog
+// population script. isActive supports future soft-removal without deleting
+// the underlying book row.
+model BookGenre {
+  id       String   @id @default(cuid())
+  isbn13   String
+  genre    String
+  isActive Boolean  @default(true)
+  addedAt  DateTime @default(now())
+
+  book     BooksCache @relation(fields: [isbn13], references: [isbn13])
+
+  @@unique([isbn13, genre])
+  @@index([genre, isActive])
+  @@map("book_genres")
+}
+
+// The currently-displayed explore selection per genre. Fully replaced (wiped
+// + reinserted) by the manual refresh script — never accumulates indefinitely.
+model ExploreBook {
+  id         String   @id @default(cuid())
+  genre      String
+  isbn13     String
+  selectedAt DateTime @default(now())
+
+  book       BooksCache @relation(fields: [isbn13], references: [isbn13])
+
+  @@unique([genre, isbn13])
+  @@index([genre])
+  @@map("explore_books")
 }
 
 // Reviews are stored as a JSON array of objects:
