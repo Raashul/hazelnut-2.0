@@ -10,6 +10,8 @@ export default function HomePage() {
   const [query, setQuery] = useState("");
   const [state, setState] = useState<SearchState>("idle");
   const [results, setResults] = useState<Book[]>([]);
+  const [total, setTotal] = useState(0);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,10 +36,11 @@ export default function HomePage() {
       }
 
       const books: Book[] = data.results ?? [];
+      setTotal(data.total ?? books.length);
 
       if (books.length === 0) {
         setState("empty");
-      } else if (books.length === 1) {
+      } else if (books.length === 1 && (data.total ?? books.length) === 1) {
         setResults(books);
         openBook(books[0]);
       } else {
@@ -49,9 +52,27 @@ export default function HomePage() {
     }
   }
 
+  async function loadMoreResults() {
+    if (!query.trim() || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(query)}&offset=${results.length}`
+      );
+      const data = await res.json().catch(() => null);
+      if (res.ok && data) {
+        setResults((prev) => [...prev, ...((data.results ?? []) as Book[])]);
+        setTotal(data.total ?? results.length);
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   function resetToIdle() {
     setState("idle");
     setResults([]);
+    setTotal(0);
     setSelectedBook(null);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
@@ -130,8 +151,13 @@ export default function HomePage() {
           </svg>
         </button>
         <p className="text-sm text-[#ab9c8a]">
-          <span className="font-semibold text-[#f4ede1]">{results.length}</span>{" "}
-          result{results.length !== 1 ? "s" : ""} for{" "}
+          <span className="font-semibold text-[#f4ede1]">{results.length}</span>
+          {total > results.length && (
+            <>
+              {" "}of <span className="font-semibold text-[#f4ede1]">{total}</span>
+            </>
+          )}{" "}
+          result{total !== 1 ? "s" : ""} for{" "}
           <span className="font-semibold text-[#f4ede1]">&ldquo;{query}&rdquo;</span>
         </p>
         <button
@@ -193,6 +219,16 @@ export default function HomePage() {
               );
             })}
           </div>
+
+          {total > results.length && (
+            <button
+              onClick={loadMoreResults}
+              disabled={loadingMore}
+              className="mt-3 w-full text-sm font-medium py-2.5 rounded-xl bg-white/5 text-[#ab9c8a] hover:text-[#f4ede1] hover:bg-white/[0.08] transition disabled:opacity-60"
+            >
+              {loadingMore ? "Loading…" : "See more"}
+            </button>
+          )}
         </div>
 
         {/* ── Right panel: book detail ── */}

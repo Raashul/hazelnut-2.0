@@ -9,10 +9,20 @@ import {
 } from "@/lib/books";
 
 const QUERY_CACHE_TTL_DAYS = 30;
+const DEFAULT_PAGE_SIZE = 5;
+const MAX_TOTAL_RESULTS = 10;
 
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get("q")?.trim();
-  if (!q) return NextResponse.json({ results: [] });
+  if (!q) return NextResponse.json({ results: [], total: 0 });
+
+  const limitParam = parseInt(req.nextUrl.searchParams.get("limit") ?? "", 10);
+  const offsetParam = parseInt(req.nextUrl.searchParams.get("offset") ?? "", 10);
+  const limit =
+    Number.isFinite(limitParam) && limitParam > 0
+      ? Math.min(limitParam, MAX_TOTAL_RESULTS)
+      : DEFAULT_PAGE_SIZE;
+  const offset = Number.isFinite(offsetParam) && offsetParam >= 0 ? offsetParam : 0;
 
   const normalized = normalizeQuery(q);
 
@@ -32,7 +42,11 @@ export async function GET(req: NextRequest) {
           });
           const byId = Object.fromEntries(books.map((b) => [b.volumeId, b]));
           const ordered = cached.resultIds.flatMap((id) => (byId[id] ? [byId[id]] : []));
-          return NextResponse.json({ results: ordered, source: "cache" });
+          return NextResponse.json({
+            results: ordered.slice(offset, offset + limit),
+            total: ordered.length,
+            source: "cache",
+          });
         }
       }
     } catch (err) {
@@ -44,7 +58,7 @@ export async function GET(req: NextRequest) {
       `https://openlibrary.org/search.json` +
       `?q=${encodeURIComponent(q)}` +
       `&fields=${OL_SEARCH_FIELDS}` +
-      `&limit=10` +
+      `&limit=${MAX_TOTAL_RESULTS}` +
       `&lang=eng`;
 
     const res = await fetch(url, {
@@ -60,7 +74,7 @@ export async function GET(req: NextRequest) {
     const docs = data.docs ?? [];
 
     if (docs.length === 0) {
-      return NextResponse.json({ results: [], source: "api" });
+      return NextResponse.json({ results: [], total: 0, source: "api" });
     }
 
     const books = docs.map(olDocToBook);
@@ -111,10 +125,18 @@ export async function GET(req: NextRequest) {
       const byId = Object.fromEntries(freshBooks.map((b) => [b.volumeId, b]));
       const ordered = resultIds.flatMap((id) => (byId[id] ? [byId[id]] : []));
 
-      return NextResponse.json({ results: ordered, source: "api" });
+      return NextResponse.json({
+        results: ordered.slice(offset, offset + limit),
+        total: ordered.length,
+        source: "api",
+      });
     } catch (err) {
       console.error("Cache write unavailable, returning uncached results:", err);
-      return NextResponse.json({ results: books, source: "api-nocache" });
+      return NextResponse.json({
+        results: books.slice(offset, offset + limit),
+        total: books.length,
+        source: "api-nocache",
+      });
     }
   } catch (err) {
     console.error("Search request failed:", err);

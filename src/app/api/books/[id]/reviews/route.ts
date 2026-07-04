@@ -103,7 +103,7 @@ export async function GET(
             tools: [{ type: "web_search_preview" }],
             input: `Find real, sourced reviews or notable quotes about the book "${title}" by ${authors.join(", ")}.
 
-Return a JSON array of up to 5 review objects. Each object must have:
+Return a JSON array of up to 10 review objects. Each object must have:
 - quote_text: the exact quote or review excerpt (string)
 - attributed_to: the reviewer's name or publication name (string)
 - source_name: publication or platform name (string)
