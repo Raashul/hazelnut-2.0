@@ -150,21 +150,37 @@ _Last updated: 2026-06-28_
 
 ---
 
-## Phase 7 — Explore Page
+## Phase 7 — Explore Page (Netflix-style genre recommendations)
 
-**Goal:** Hardcoded genre grid → Books API → book list → detail view (reuses Phase 3 flow).
+**Goal:** Genre-based browse feed backed by a growing internal catalog and a periodically-refreshed curated selection per genre — not a live per-request Books API call.
+
+**Context:** Revised from the original "hardcoded genre grid → live API query" design (2026-07-03 design review). The catalog of books per genre grows over time via a manually-run population script; the explore page itself only ever reads a pre-computed, internal selection — no OpenLibrary calls happen at request time.
+
+**Key mechanics (from design review):**
+- A standalone script (Go or JS), run manually (not scheduled), takes the fixed genre list, queries OpenLibrary by `subject` (1:1 mapped to genre), and inserts new books into the catalog. Duplicates are detected by ISBN and skipped. Script self-throttles to respect the 3 req/sec OpenLibrary limit.
+- Books are filtered to `rating > 1` on ingestion and tagged with an `isActive` flag (default `true`) for future soft-removal (no removal process defined yet — deferred).
+- `books_cache` remains the single source of truth for book data. A separate `explore_books` table holds the currently-displayed selection per genre (references `books_cache`).
+- A refresh (manual/scripted) **wipes and replaces** `explore_books` rows for a genre with a fresh random draw — weighted toward higher rating — of 40 books from the `isActive` catalog pool for that genre. If fewer than 30 active books exist for a genre, it just shows what's available.
+- The underlying catalog only grows (books are never deleted); only the *displayed* selection changes on refresh. Same selection is shown to all users (no personalization).
+- Known accepted risk: the wipe+reinsert on refresh is not atomic — a request during refresh could see an empty/partial genre. Deferred given current traffic scale; needs a transaction (or versioned swap) before real concurrent traffic.
 
 ### Tasks
-- [ ] Define hardcoded genre list
-- [ ] `GET /api/explore/[genre]` — Books API category query, Layer 1 cached
+- [ ] Define hardcoded genre list, mapped 1:1 to OpenLibrary `subject` values
+- [ ] Prisma schema: genre/`isActive` tagging on the catalog (extend `books_cache` or new join table) + new `explore_books` table (genre, book reference, addedAt)
+- [ ] Population script (Go or JS): query OpenLibrary per genre/subject, dedupe by ISBN, filter `rating > 1`, insert with `isActive: true`, throttled to 3 req/sec — manually triggered, no scheduler
+- [ ] Refresh script/flow: for each genre, wipe `explore_books` rows and reinsert a weighted-random draw of 40 from the `isActive` pool (floor: show what's available if pool < 30)
+- [ ] `GET /api/explore/[genre]` — reads `explore_books` joined to `books_cache` only; no live OpenLibrary call
 - [ ] Explore page UI: genre grid
 - [ ] Genre detail: book list (cover, title, author, rating)
-- [ ] Tapping a book → detail view with enrichment SSE (same as Home)
+- [ ] Tapping a book → detail view with enrichment SSE (same flow as Home, Phase 3)
 
 ### Success Criteria
 - [ ] Genre grid renders all hardcoded genres
-- [ ] Tapping genre shows book list (Books API, cached)
+- [ ] Tapping genre shows 40 books (or fewer if catalog is small) from `explore_books`, no live external API call
 - [ ] Tapping book opens detail + triggers enrichment SSE
+- [ ] Population script adds new books without duplicating existing ISBNs
+- [ ] Refresh replaces the displayed selection per genre without deleting catalog data
+- [ ] Same explore content shown to all users (no personalization)
 
 ---
 
@@ -194,4 +210,4 @@ _Last updated: 2026-06-28_
 | Enrichment validation | Unverified/Verified/Fake; human review via Supabase dashboard |
 | Failed enrichment | status: failed, max 3 retries |
 | Deployment | Vercel Pro, maxDuration=300 on enrichment route |
-| Explore | Browse by genre, hardcoded genre list |
+| Explore | Browse by genre, hardcoded genre list, curated selection from a growing internal catalog (not live API per request) |

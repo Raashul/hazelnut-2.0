@@ -6,7 +6,9 @@
     "dev": "node node_modules/next/dist/bin/next dev",
     "build": "node node_modules/next/dist/bin/next build",
     "start": "node node_modules/next/dist/bin/next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "explore:populate": "tsx scripts/populate-explore-catalog.ts",
+    "explore:refresh": "tsx scripts/refresh-explore-selection.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -31,6 +33,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
+    "tsx": "^4.23.0",
     "typescript": "^5.9.3"
   }
 }
