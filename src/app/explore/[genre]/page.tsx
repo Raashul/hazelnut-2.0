@@ -20,11 +20,14 @@ function GenreDetail({ genreSlug }: { genreSlug: string }) {
   const [books, setBooks] = useState<Book[]>([]);
   const [state, setState] = useState<LoadState>("loading");
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     let cancelled = false;
+    setState("loading");
 
-    fetch(`/api/explore/${encodeURIComponent(genreSlug)}`)
+    fetch(`/api/explore/${encodeURIComponent(genreSlug)}?page=${page}`)
       .then(async (res) => {
         if (cancelled) return;
         if (res.status === 404) {
@@ -34,6 +37,7 @@ function GenreDetail({ genreSlug }: { genreSlug: string }) {
         const data = await res.json();
         setGenreLabel(data.genre?.label ?? genreSlug);
         setBooks(data.books ?? []);
+        setTotalPages(data.totalPages ?? 1);
         setState("done");
       })
       .catch(() => {
@@ -43,7 +47,12 @@ function GenreDetail({ genreSlug }: { genreSlug: string }) {
     return () => {
       cancelled = true;
     };
-  }, [genreSlug]);
+  }, [genreSlug, page]);
+
+  const goToPage = (next: number) => {
+    setSelectedBook(null);
+    setPage(next);
+  };
 
   if (state === "loading") {
     return (
@@ -133,6 +142,28 @@ function GenreDetail({ genreSlug }: { genreSlug: string }) {
               );
             })}
           </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-center gap-4 mt-6 mb-10">
+              <button
+                onClick={() => goToPage(page - 1)}
+                disabled={page <= 1}
+                className="text-sm text-[#ab9c8a] hover:text-[#f4ede1] disabled:opacity-30 disabled:hover:text-[#ab9c8a] transition"
+              >
+                ← Prev
+              </button>
+              <span className="text-xs text-[#6f6255]">
+                Page {page} of {totalPages}
+              </span>
+              <button
+                onClick={() => goToPage(page + 1)}
+                disabled={page >= totalPages}
+                className="text-sm text-[#ab9c8a] hover:text-[#f4ede1] disabled:opacity-30 disabled:hover:text-[#ab9c8a] transition"
+              >
+                Next →
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ── Right panel: book detail ── */}

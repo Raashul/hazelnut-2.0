@@ -43,3 +43,6 @@ body {
 .custom-scroll::-webkit-scrollbar-thumb { background: rgba(224, 152, 74, 0.3); border-radius: 3px; }
 .custom-scroll::-webkit-scrollbar-thumb:hover { background: rgba(224, 152, 74, 0.5); }
 .custom-scroll { scrollbar-width: thin; scrollbar-color: rgba(224, 152, 74, 0.3) transparent; }
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }

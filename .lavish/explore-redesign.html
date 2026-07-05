@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hazelnut — Explore (Redesign Mockup)</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #1a1310;
+      --card:       #211a14;
+      --card-hover: #2a2119;
+      --text:       #f4ede1;
+      --text-muted: #ab9c8a;
+      --text-dim:   #6f6255;
+      --amber:      #e0984a;
+      --amber-lt:   #f0c894;
+      --border:     rgba(255, 214, 170, 0.09);
+      --border-hov: rgba(255, 214, 170, 0.25);
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      height: 56px;
+      background: rgba(26,19,16,0.92);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      gap: 32px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--amber-lt);
+      letter-spacing: -0.5px;
+    }
+    .nav-links { display: flex; gap: 20px; }
+    .nav-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-link.active { color: var(--text); }
+    .nav-link:hover { color: var(--text); }
+
+    /* ── PAGE ── */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 36px 24px 60px;
+    }
+
+    .page-header { margin-bottom: 36px; }
+    .page-title {
+      font-family: Georgia, serif;
+      font-style: italic;
+      font-size: 30px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.2;
+      margin-bottom: 6px;
+    }
+    .page-subtitle { font-size: 13px; color: var(--text-muted); }
+
+    /* ── GENRE ROW ── */
+    .genre-section { margin-bottom: 40px; }
+
+    .genre-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .genre-title {
+      font-family: Georgia, serif;
+      font-size: 19px;
+      font-weight: 500;
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+    .genre-count {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+    .genre-see-all {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--amber);
+      text-decoration: none;
+      opacity: 1;
+      transition: color 0.2s;
+    }
+    .genre-see-all:hover { color: var(--amber-lt); }
+
+    /* ── SCROLL STRIP ── */
+    .scroll-strip {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      /* vertical padding so scaled cards don't get clipped */
+      padding-bottom: 20px;
+      padding-top: 10px;
+      padding-right: 0;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .scroll-strip::-webkit-scrollbar { display: none; }
+    .scroll-strip { scrollbar-width: none; }
+
+    /* ── BOOK CARD ── */
+    .book-card {
+      flex: 0 0 130px;
+      cursor: pointer;
+      border-radius: 12px;
+      padding: 8px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: background 0.22s, border-color 0.22s, transform 0.22s, box-shadow 0.22s;
+      scroll-snap-align: start;
+      position: relative;
+      z-index: 0;
+    }
+    .book-card:hover {
+      background: var(--card-hover);
+      border-color: var(--border-hov);
+      transform: scale(1.09) translateY(-4px);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 214, 170, 0.18);
+      z-index: 10;
+    }
+
+    .book-cover {
+      width: 100%;
+      aspect-ratio: 2/3;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+    .book-cover-inner {
+      width: 100%;
+      height: 100%;
+    }
+    /* subtle spine line */
+    .book-cover-inner::after {
+      content: '';
+      position: absolute;
+      left: 12%;
+      top: 0; bottom: 0;
+      width: 3px;
+      background: rgba(0,0,0,0.18);
+    }
+
+    .book-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 3px;
+    }
+    .book-author {
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .book-rating {
+      font-size: 11px;
+      color: var(--amber-lt);
+    }
+
+    /* ── SHOW MORE CARD ── */
+    .show-more-card {
+      flex: 0 0 110px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 214, 170, 0.18);
+      background: rgba(255, 214, 170, 0.03);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.18s, border-color 0.18s, transform 0.18s;
+      aspect-ratio: unset;
+      /* match the height of a book card: cover 2:3 at 114px wide + padding ~= 195px total */
+      min-height: 195px;
+      scroll-snap-align: start;
+    }
+    .show-more-card:hover {
+      background: rgba(255, 214, 170, 0.07);
+      border-color: rgba(255, 214, 170, 0.32);
+      transform: translateY(-2px);
+    }
+    .show-more-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1.5px solid var(--amber);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--amber);
+      transition: background 0.18s;
+    }
+    .show-more-card:hover .show-more-icon {
+      background: rgba(224,152,74,0.12);
+    }
+    .show-more-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--amber);
+      text-align: center;
+      line-height: 1.3;
+    }
+
+    /* ── LOADING SKELETON ── */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .skeleton {
+      background: var(--card);
+      border-radius: 12px;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <span class="nav-logo">hazelnut</span>
+  <div class="nav-links">
+    <a href="#" class="nav-link">Library</a>
+    <a href="#" class="nav-link active">Explore</a>
+    <a href="#" class="nav-link">Search</a>
+  </div>
+</nav>
+
+<main>
+  <div class="page-header">
+    <h1 class="page-title">Explore</h1>
+    <p class="page-subtitle">Browse the best books by genre.</p>
+  </div>
+
+  <!-- ══════════════════════ FANTASY ══════════════════════ -->
+  <section class="genre-section">
+    <div class="genre-header">
+      <h2 class="genre-title">Fantasy</h2>
+      <span class="genre-count">42 books</span>
+      <a href="/explore/fantasy" class="genre-see-all">See all →</a>
+    </div>
+    <div class="scroll-strip">
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #3b2a5a 0%, #7e4a8a 50%, #b56c4a 100%);"></div>
+        </div>
+        <div class="book-title">The Name of the Wind</div>
+        <div class="book-author">Patrick Rothfuss</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #1c3a2a 0%, #2e6a44 50%, #7ab87a 100%);"></div>
+        </div>
+        <div class="book-title">The Way of Kings</div>
+        <div class="book-author">Brandon Sanderson</div>
+        <div class="book-rating">★ 4.6</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #4a2210 0%, #c8641a 50%, #e8a050 100%);"></div>
+        </div>
+        <div class="book-title">A Wizard of Earthsea</div>
+        <div class="book-author">Ursula K. Le Guin</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #1a1a4a 0%, #3535a0 50%, #6868d8 100%);"></div>
+        </div>
+        <div class="book-title">The Fellowship of the Ring</div>
+        <div class="book-author">J.R.R. Tolkien</div>
+        <div class="book-rating">★ 4.7</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #2a1a0a 0%, #8b5a1a 50%, #d4a050 100%);"></div>
+        </div>
+        <div class="book-title">The Lies of Locke Lamora</div>
+        <div class="book-author">Scott Lynch</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #3a1a2a 0%, #8a2a5a 50%, #c84a7a 100%);"></div>
+        </div>
+        <div class="book-title">Mistborn: The Final Empire</div>
+        <div class="book-author">Brandon Sanderson</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0a2a1a 0%, #1a6a3a 50%, #4aaa6a 100%);"></div>
+        </div>
+        <div class="book-title">Assassin's Apprentice</div>
+        <div class="book-author">Robin Hobb</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #2a2a0a 0%, #7a7a1a 50%, #c8c83a 100%);"></div>
+        </div>
+        <div class="book-title">Jonathan Strange & Mr Norrell</div>
+        <div class="book-author">Susanna Clarke</div>
+        <div class="book-rating">★ 4.1</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #1a0a2a 0%, #5a1a8a 50%, #9a4ac8 100%);"></div>
+        </div>
+        <div class="book-title">The Blade Itself</div>
+        <div class="book-author">Joe Abercrombie</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0a1a2a 0%, #1a4a6a 50%, #3a8aaa 100%);"></div>
+        </div>
+        <div class="book-title">The Last Wish</div>
+        <div class="book-author">Andrzej Sapkowski</div>
+        <div class="book-rating">★ 4.2</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #2a0a0a 0%, #7a1a1a 50%, #c84a4a 100%);"></div>
+        </div>
+        <div class="book-title">Piranesi</div>
+        <div class="book-author">Susanna Clarke</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <a href="/explore/fantasy" class="show-more-card">
+        <div class="show-more-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+        <span class="show-more-label">Show<br>More</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ MYSTERY ══════════════════════ -->
+  <section class="genre-section">
+    <div class="genre-header">
+      <h2 class="genre-title">Mystery</h2>
+      <span class="genre-count">36 books</span>
+      <a href="/explore/mystery" class="genre-see-all">See all →</a>
+    </div>
+    <div class="scroll-strip">
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0e1a20 0%, #1e3a4a 50%, #3a6a7a 100%);"></div>
+        </div>
+        <div class="book-title">The Girl with the Dragon Tattoo</div>
+        <div class="book-author">Stieg Larsson</div>
+        <div class="book-rating">★ 4.2</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #1a1208 0%, #5a3a10 50%, #a06a20 100%);"></div>
+        </div>
+        <div class="book-title">Gone Girl</div>
+        <div class="book-author">Gillian Flynn</div>
+        <div class="book-rating">★ 4.0</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #10100a 0%, #2e2e1a 50%, #6a6a3a 100%);"></div>
+        </div>
+        <div class="book-title">And Then There Were None</div>
+        <div class="book-author">Agatha Christie</div>
+        <div class="book-rating">★ 4.6</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0a1520 0%, #1a3a50 60%, #5a8ab0 100%);"></div>
+        </div>
+        <div class="book-title">The Big Sleep</div>
+        <div class="book-author">Raymond Chandler</div>
+        <div class="book-rating">★ 4.1</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #200a0a 0%, #601010 50%, #b02020 100%);"></div>
+        </div>
+        <div class="book-title">In the Woods</div>
+        <div class="book-author">Tana French</div>
+        <div class="book-rating">★ 4.0</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0a200a 0%, #1a5a1a 50%, #3a9a3a 100%);"></div>
+        </div>
+        <div class="book-title">The Thursday Murder Club</div>
+        <div class="book-author">Richard Osman</div>
+        <div class="book-rating">★ 4.1</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #1a0a20 0%, #4a1a60 50%, #8a3aaa 100%);"></div>
+        </div>
+        <div class="book-title">Knives Out</div>
+        <div class="book-author">Rian Johnson</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #201808 0%, #604818 50%, #b08830 100%);"></div>
+        </div>
+        <div class="book-title">The Name of the Rose</div>
+        <div class="book-author">Umberto Eco</div>
+        <div class="book-rating">★ 4.2</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #08101a 0%, #183050 50%, #386090 100%);"></div>
+        </div>
+        <div class="book-title">Sharp Objects</div>
+        <div class="book-author">Gillian Flynn</div>
+        <div class="book-rating">★ 3.9</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #1a1808 0%, #5a5010 50%, #a09028 100%);"></div>
+        </div>
+        <div class="book-title">A Study in Scarlet</div>
+        <div class="book-author">Arthur Conan Doyle</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #200808 0%, #601818 50%, #b04040 100%);"></div>
+        </div>
+        <div class="book-title">The Woman in the Window</div>
+        <div class="book-author">A.J. Finn</div>
+        <div class="book-rating">★ 3.8</div>
+      </div>
+
+      <a href="/explore/mystery" class="show-more-card">
+        <div class="show-more-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+        <span class="show-more-label">Show<br>More</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ SCIENCE ══════════════════════ -->
+  <section class="genre-section">
+    <div class="genre-header">
+      <h2 class="genre-title">Science</h2>
+      <span class="genre-count">29 books</span>
+      <a href="/explore/science" class="genre-see-all">See all →</a>
+    </div>
+    <div class="scroll-strip">
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #081820 0%, #185070 50%, #2898c0 100%);"></div>
+        </div>
+        <div class="book-title">A Brief History of Time</div>
+        <div class="book-author">Stephen Hawking</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #081008 0%, #184818 50%, #389838 100%);"></div>
+        </div>
+        <div class="book-title">The Selfish Gene</div>
+        <div class="book-author">Richard Dawkins</div>
+        <div class="book-rating">★ 4.1</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #201800 0%, #705000 50%, #c89000 100%);"></div>
+        </div>
+        <div class="book-title">Cosmos</div>
+        <div class="book-author">Carl Sagan</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #180820 0%, #502870 50%, #8860c8 100%);"></div>
+        </div>
+        <div class="book-title">The Structure of Scientific Revolutions</div>
+        <div class="book-author">Thomas S. Kuhn</div>
+        <div class="book-rating">★ 4.0</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0a1a20 0%, #205060 50%, #409080 100%);"></div>
+        </div>
+        <div class="book-title">The Double Helix</div>
+        <div class="book-author">James D. Watson</div>
+        <div class="book-rating">★ 3.9</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #181008 0%, #503018 50%, #a06030 100%);"></div>
+        </div>
+        <div class="book-title">Surely You're Joking, Mr. Feynman!</div>
+        <div class="book-author">Richard P. Feynman</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #081218 0%, #183858 50%, #386888 100%);"></div>
+        </div>
+        <div class="book-title">The Gene: An Intimate History</div>
+        <div class="book-author">Siddhartha Mukherjee</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #101808 0%, #385018 50%, #688838 100%);"></div>
+        </div>
+        <div class="book-title">Thinking, Fast and Slow</div>
+        <div class="book-author">Daniel Kahneman</div>
+        <div class="book-rating">★ 4.2</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #200818 0%, #602050 50%, #b04090 100%);"></div>
+        </div>
+        <div class="book-title">The Immortal Life of Henrietta Lacks</div>
+        <div class="book-author">Rebecca Skloot</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #080820 0%, #182060 50%, #3050c0 100%);"></div>
+        </div>
+        <div class="book-title">On the Origin of Species</div>
+        <div class="book-author">Charles Darwin</div>
+        <div class="book-rating">★ 4.1</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #181808 0%, #505008 50%, #989808 100%);"></div>
+        </div>
+        <div class="book-title">What Is Life?</div>
+        <div class="book-author">Erwin Schrödinger</div>
+        <div class="book-rating">★ 4.0</div>
+      </div>
+
+      <a href="/explore/science" class="show-more-card">
+        <div class="show-more-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+        <span class="show-more-label">Show<br>More</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════════════════ HISTORY ══════════════════════ -->
+  <section class="genre-section">
+    <div class="genre-header">
+      <h2 class="genre-title">History</h2>
+      <span class="genre-count">33 books</span>
+      <a href="/explore/history" class="genre-see-all">See all →</a>
+    </div>
+    <div class="scroll-strip">
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #201408 0%, #704018 50%, #c07830 100%);"></div>
+        </div>
+        <div class="book-title">Sapiens: A Brief History of Humankind</div>
+        <div class="book-author">Yuval Noah Harari</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #181018 0%, #503050 50%, #907090 100%);"></div>
+        </div>
+        <div class="book-title">The Guns of August</div>
+        <div class="book-author">Barbara W. Tuchman</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #0a1808 0%, #285018 50%, #589838 100%);"></div>
+        </div>
+        <div class="book-title">The Rise and Fall of the Third Reich</div>
+        <div class="book-author">William L. Shirer</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #180808 0%, #503018 50%, #a06830 100%);"></div>
+        </div>
+        <div class="book-title">Longitude</div>
+        <div class="book-author">Dava Sobel</div>
+        <div class="book-rating">★ 4.0</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #101820 0%, #305060 50%, #508898 100%);"></div>
+        </div>
+        <div class="book-title">The Devil in the White City</div>
+        <div class="book-author">Erik Larson</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #201808 0%, #685028 50%, #b89060 100%);"></div>
+        </div>
+        <div class="book-title">Team of Rivals</div>
+        <div class="book-author">Doris Kearns Goodwin</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #080820 0%, #202878 50%, #4050c8 100%);"></div>
+        </div>
+        <div class="book-title">The Emperor of All Maladies</div>
+        <div class="book-author">Siddhartha Mukherjee</div>
+        <div class="book-rating">★ 4.4</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #201010 0%, #703030 50%, #c05050 100%);"></div>
+        </div>
+        <div class="book-title">Napoleon: A Life</div>
+        <div class="book-author">Andrew Roberts</div>
+        <div class="book-rating">★ 4.5</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #081818 0%, #185858 50%, #389898 100%);"></div>
+        </div>
+        <div class="book-title">The Wright Brothers</div>
+        <div class="book-author">David McCullough</div>
+        <div class="book-rating">★ 4.2</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #181808 0%, #585008 50%, #a89828 100%);"></div>
+        </div>
+        <div class="book-title">Genghis Khan and the Making of the Modern World</div>
+        <div class="book-author">Jack Weatherford</div>
+        <div class="book-rating">★ 4.3</div>
+      </div>
+
+      <div class="book-card">
+        <div class="book-cover">
+          <div class="book-cover-inner" style="background: linear-gradient(160deg, #100818 0%, #402858 50%, #7050a8 100%);"></div>
+        </div>
+        <div class="book-title">The Silk Roads</div>
+        <div class="book-author">Peter Frankopan</div>
+        <div class="book-rating">★ 4.1</div>
+      </div>
+
+      <a href="/explore/history" class="show-more-card">
+        <div class="show-more-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+        <span class="show-more-label">Show<br>More</span>
+      </a>
+    </div>
+  </section>
+
+</main>
+
+</body>
+</html>
