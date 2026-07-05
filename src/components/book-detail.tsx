@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { usePathname, useRouter } from "next/navigation";
+import { useAuth } from "@/context/auth-context";
+import { authFetch } from "@/lib/api-client";
 
 export interface Book {
   isbn13: string;
@@ -32,6 +35,75 @@ export function BookDetail({ book }: { book: Book }) {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [reviewsState, setReviewsState] = useState<"loading" | "done">("loading");
   const esRef = useRef<EventSource | null>(null);
+
+  const { user, token } = useAuth();
+  const router = useRouter();
+  const pathname = usePathname();
+  const [inCollection, setInCollection] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [dateRead, setDateRead] = useState("");
+  const [review, setReview] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+
+  useEffect(() => {
+    if (!user || !token) return;
+    let cancelled = false;
+    authFetch(`/api/collection/${encodeURIComponent(book.isbn13)}`, token)
+      .then((res) => res.json())
+      .then((data) => {
+        if (!cancelled) setInCollection(!!data.inCollection);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [book.isbn13, user, token]);
+
+  function handleAddClick() {
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    setModalOpen(true);
+  }
+
+  async function handleSaveToCollection() {
+    setSaving(true);
+    setSaveError("");
+    try {
+      const res = await authFetch("/api/collection", token, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isbn13: book.isbn13,
+          volumeId: book.volumeId,
+          title: book.title,
+          authors: book.authors,
+          coverUrl: book.coverUrl,
+          rating: book.rating,
+          publishedYear: book.publishedYear,
+          pageCount: book.pageCount,
+          description: book.description,
+          dateRead: dateRead || null,
+          review: review || null,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setSaveError(data?.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+      setInCollection(true);
+      setModalOpen(false);
+      setDateRead("");
+      setReview("");
+    } catch {
+      setSaveError("Something went wrong. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     const params = new URLSearchParams({
@@ -66,44 +138,69 @@ export function BookDetail({ book }: { book: Book }) {
   return (
     <div>
       {/* Metadata card */}
-      <div className="bg-[#211a14] rounded-2xl border border-[rgba(255,214,170,0.09)] p-5 flex gap-5 mb-6">
-        {book.coverUrl ? (
-          <Image
-            src={book.coverUrl}
-            alt={book.title}
-            width={96}
-            height={136}
-            className="rounded-lg object-cover shrink-0 shadow-sm"
-            unoptimized
-          />
-        ) : (
-          <div className="w-24 h-[136px] rounded-lg bg-white/[0.05] shrink-0" />
-        )}
-        <div className="min-w-0">
-          <h2 className="font-display italic font-medium text-xl text-[#f4ede1] leading-snug mb-1">
-            {book.title}
-          </h2>
-          <p className="text-sm text-[#ab9c8a] mb-3">{book.authors.join(", ")}</p>
-          <div className="flex flex-wrap gap-2 mb-3">
-            {book.rating && (
-              <span className="inline-flex items-center gap-1 text-xs bg-[#e0984a]/[0.12] text-[#f0c894] rounded-full px-2.5 py-1 font-medium">
-                ★ {book.rating}
-              </span>
-            )}
-            {book.publishedYear && (
-              <span className="inline-flex items-center text-xs bg-white/5 text-[#ab9c8a] rounded-full px-2.5 py-1">
-                {book.publishedYear}
-              </span>
-            )}
-            {book.pageCount && (
-              <span className="inline-flex items-center text-xs bg-white/5 text-[#ab9c8a] rounded-full px-2.5 py-1">
-                {book.pageCount} pages
-              </span>
+      <div className="bg-[#211a14] rounded-2xl border border-[rgba(255,214,170,0.09)] p-5 mb-6">
+        <div className="flex justify-end mb-3">
+          {inCollection ? (
+            <button
+              aria-label="Already in your collection"
+              title="Already in your collection"
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-[#e0984a]/[0.15] text-[#e0984a] cursor-default"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" />
+              </svg>
+            </button>
+          ) : (
+            <button
+              onClick={handleAddClick}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/5 hover:bg-white/10 text-[#ab9c8a] hover:text-[#f4ede1] text-xs font-medium pl-2.5 pr-3 py-2 transition"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" />
+              </svg>
+              Add to my Library
+            </button>
+          )}
+        </div>
+        <div className="flex gap-5">
+          {book.coverUrl ? (
+            <Image
+              src={book.coverUrl}
+              alt={book.title}
+              width={96}
+              height={136}
+              className="rounded-lg object-cover shrink-0 shadow-sm"
+              unoptimized
+            />
+          ) : (
+            <div className="w-24 h-[136px] rounded-lg bg-white/[0.05] shrink-0" />
+          )}
+          <div className="min-w-0">
+            <h2 className="font-display italic font-medium text-xl text-[#f4ede1] leading-snug mb-1">
+              {book.title}
+            </h2>
+            <p className="text-sm text-[#ab9c8a] mb-3">{book.authors.join(", ")}</p>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {book.rating && (
+                <span className="inline-flex items-center gap-1 text-xs bg-[#e0984a]/[0.12] text-[#f0c894] rounded-full px-2.5 py-1 font-medium">
+                  ★ {book.rating}
+                </span>
+              )}
+              {book.publishedYear && (
+                <span className="inline-flex items-center text-xs bg-white/5 text-[#ab9c8a] rounded-full px-2.5 py-1">
+                  {book.publishedYear}
+                </span>
+              )}
+              {book.pageCount && (
+                <span className="inline-flex items-center text-xs bg-white/5 text-[#ab9c8a] rounded-full px-2.5 py-1">
+                  {book.pageCount} pages
+                </span>
+              )}
+            </div>
+            {book.description && (
+              <p className="text-xs text-[#ab9c8a] leading-relaxed line-clamp-4">{book.description}</p>
             )}
           </div>
-          {book.description && (
-            <p className="text-xs text-[#ab9c8a] leading-relaxed line-clamp-4">{book.description}</p>
-          )}
         </div>
       </div>
 
@@ -164,6 +261,63 @@ export function BookDetail({ book }: { book: Book }) {
             ))}
           </div>
         </>
+      )}
+
+      {modalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={() => !saving && setModalOpen(false)}
+        >
+          <div
+            className="w-full max-w-sm bg-[#211a14] border border-[rgba(255,214,170,0.12)] rounded-2xl p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="font-display italic text-lg text-[#f4ede1] mb-1">Add to my Collection</h3>
+            <p className="text-xs text-[#ab9c8a] mb-4">{book.title} — both fields are optional.</p>
+
+            <label className="block text-xs font-medium text-[#ab9c8a] mb-1.5" htmlFor="dateRead">
+              Date read
+            </label>
+            <input
+              id="dateRead"
+              type="date"
+              value={dateRead}
+              onChange={(e) => setDateRead(e.target.value)}
+              className="w-full mb-4 rounded-lg bg-white/5 border border-[rgba(255,214,170,0.12)] px-3 py-2 text-sm text-[#f4ede1] outline-none focus:border-[#e0984a]/50 transition"
+            />
+
+            <label className="block text-xs font-medium text-[#ab9c8a] mb-1.5" htmlFor="review">
+              Your review
+            </label>
+            <textarea
+              id="review"
+              rows={3}
+              value={review}
+              onChange={(e) => setReview(e.target.value)}
+              placeholder="What did you think?"
+              className="w-full mb-4 rounded-lg bg-white/5 border border-[rgba(255,214,170,0.12)] px-3 py-2 text-sm text-[#f4ede1] placeholder:text-[#6f6255] outline-none focus:border-[#e0984a]/50 transition resize-none"
+            />
+
+            {saveError && <p className="text-sm text-red-400 mb-3">{saveError}</p>}
+
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setModalOpen(false)}
+                disabled={saving}
+                className="px-4 py-2 rounded-full text-sm text-[#ab9c8a] hover:text-[#f4ede1] hover:bg-white/5 transition disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveToCollection}
+                disabled={saving}
+                className="px-4 py-2 rounded-full text-sm font-medium bg-[#e0984a] hover:bg-[#f0ac63] text-[#1a1208] transition disabled:opacity-50"
+              >
+                {saving ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

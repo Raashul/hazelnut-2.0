@@ -21,16 +21,11 @@ enum VerificationStatus {
   FAKE
 }
 
-enum BookmarkStatus {
-  FUTURE_READ
-  ALREADY_READ
-}
-
 // ─── Global / shared tables ───────────────────────────────────────────────────
 
 model BooksCache {
-  isbn13        String    @id
-  volumeId      String    @unique
+  isbn13        String   @id
+  volumeId      String   @unique
   title         String
   authors       String[]
   coverUrl      String?
@@ -39,12 +34,12 @@ model BooksCache {
   pageCount     Int?
   description   String?
   sourcePayload Json
-  createdAt     DateTime  @default(now())
+  createdAt     DateTime @default(now())
 
-  enrichment    EnrichmentCache?
-  bookmarks     Bookmark[]
-  genres        BookGenre[]
-  exploreBooks  ExploreBook[]
+  enrichment        EnrichmentCache?
+  genres            BookGenre[]
+  exploreBooks      ExploreBook[]
+  collectionEntries CollectionEntry[]
 
   @@map("books_cache")
 }
@@ -59,7 +54,7 @@ model BookGenre {
   isActive Boolean  @default(true)
   addedAt  DateTime @default(now())
 
-  book     BooksCache @relation(fields: [isbn13], references: [isbn13])
+  book BooksCache @relation(fields: [isbn13], references: [isbn13])
 
   @@unique([isbn13, genre])
   @@index([genre, isActive])
@@ -74,7 +69,7 @@ model ExploreBook {
   isbn13     String
   selectedAt DateTime @default(now())
 
-  book       BooksCache @relation(fields: [isbn13], references: [isbn13])
+  book BooksCache @relation(fields: [isbn13], references: [isbn13])
 
   @@unique([genre, isbn13])
   @@index([genre])
@@ -95,7 +90,7 @@ model EnrichmentCache {
   failedAt    DateTime?
   generatedAt DateTime         @default(now())
 
-  book        BooksCache       @relation(fields: [isbn13], references: [isbn13])
+  book BooksCache @relation(fields: [isbn13], references: [isbn13])
 
   @@map("enrichment_cache")
 }
@@ -112,31 +107,29 @@ model QueryCache {
 // ─── Per-user tables ──────────────────────────────────────────────────────────
 
 model User {
-  id           String     @id @default(cuid())
-  username     String     @unique
+  id           String   @id @default(cuid())
+  username     String   @unique
   passwordHash String
-  createdAt    DateTime   @default(now())
+  createdAt    DateTime @default(now())
 
-  bookmarks    Bookmark[]
+  collectionEntries CollectionEntry[]
 
   @@map("users")
 }
 
-model Bookmark {
-  id             String         @id @default(cuid())
-  userId         String
-  isbn13         String
-  status         BookmarkStatus
-  personalNote   String?
-  personalRating Int?
-  dateRead       DateTime?
-  tags           String[]       @default([])
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+// A book the user has already read, added from the book detail view.
+// Optional dateRead / review — both filled in only if the user chooses to.
+model CollectionEntry {
+  id        String    @id @default(cuid())
+  userId    String
+  isbn13    String
+  dateRead  DateTime?
+  review    String?
+  createdAt DateTime  @default(now())
 
-  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  book           BooksCache     @relation(fields: [isbn13], references: [isbn13])
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book BooksCache @relation(fields: [isbn13], references: [isbn13])
 
   @@unique([userId, isbn13])
-  @@map("bookmarks")
+  @@map("collection_entries")
 }

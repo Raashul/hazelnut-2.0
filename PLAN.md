@@ -128,25 +128,32 @@ _Last updated: 2026-06-28_
 
 ---
 
-## Phase 6 — Collection Page
+## Phase 6 — Collection Page ✅ DONE (v1 scope, narrowed via grill-me review)
 
-**Goal:** Save books, personal notes/ratings, edit/delete bookmarks, segmented filter view.
+**Goal:** Let a user mark a book as already-read from the book detail view, with an optional date read and self-review, and see those books on `/collection`.
+
+**Scope note:** the original plan below (future/already-read status, personal rating, tags, edit/delete) was deliberately cut down in a grill-me design review. The old unused `Bookmark` model was dropped and replaced with a minimal `CollectionEntry` table. Deferred to a future pass: want-to-read list, ratings, tags, editing, and removal.
 
 ### Tasks
-- [ ] `POST /api/bookmarks` — save book to collection (future_read | already_read)
-- [ ] `GET /api/bookmarks` — list user's bookmarks (auth required)
-- [ ] `PATCH /api/bookmarks/[id]` — edit note, rating, date, status
-- [ ] `DELETE /api/bookmarks/[id]` — remove bookmark
-- [ ] Save CTA on book detail (triggers auth prompt if unauthenticated)
-- [ ] Collection page UI: segmented control (Future / Already Read), bookmark list
-- [ ] Bookmark detail: editable note, personal rating, date read, tags
-- [ ] Move Future → Already Read flow
+- [x] `POST /api/collection` — add a book to the collection (already-read only)
+- [x] `GET /api/collection` — list user's collection entries (auth required), sorted by dateRead desc then title
+- [x] `GET /api/collection/[isbn13]` — check whether a book is already in the user's collection
+- [x] Shared `requireAuth()` server helper + `authFetch()` client wrapper (first authenticated routes in the app)
+- [x] "Add to my Collection" icon on book detail (triggers redirect to `/login?next=...` if unauthenticated)
+- [x] Modal: optional date read + self-review, both optional
+- [x] Already-collected books show a filled bookmark icon (no-op on click — no edit-in-place yet)
+- [x] Collection page: list with cover/title/author + dateRead + review inline, empty state "Nothing in your collection."
+
+### Explicitly deferred (not in this pass)
+- [ ] `PATCH` / edit an existing collection entry
+- [ ] `DELETE` / remove a book from the collection
+- [ ] Want-to-read (`FUTURE_READ`) status and Future → Already Read flow
+- [ ] Personal rating and tags
 
 ### Success Criteria
-- [ ] Save CTA → auth prompt if not logged in → saves after login
-- [ ] Collection filters correctly by status
-- [ ] Edit, status change, delete all persist to DB
-- [ ] No LLM / enrichment content appears on Collection page
+- [x] Add CTA → redirects to login if not authenticated → returns and can add after login
+- [x] Added books appear on `/collection` with date/review visible
+- [x] No LLM / enrichment content appears on Collection page
 
 ---
 
