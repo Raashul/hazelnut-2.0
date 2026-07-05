@@ -1,3 +1,4 @@
+import { NextRequest } from "next/server";
 import { SignJWT, jwtVerify } from "jose";
 
 export interface JWTPayload {
@@ -23,4 +24,14 @@ export async function verifyJWT(token: string): Promise<JWTPayload | null> {
   } catch {
     return null;
   }
+}
+
+// Verifies the Bearer token on an incoming request. Returns null (route
+// handlers should respond 401) rather than throwing, since an invalid or
+// missing token isn't an unexpected error — it's the normal logged-out case.
+export async function requireAuth(req: NextRequest): Promise<JWTPayload | null> {
+  const header = req.headers.get("authorization");
+  const token = header?.startsWith("Bearer ") ? header.slice(7) : null;
+  if (!token) return null;
+  return verifyJWT(token);
 }
