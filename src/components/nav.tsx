@@ -7,7 +7,7 @@ import { useAuth } from "@/context/auth-context";
 const tabs = [
   { href: "/", label: "Home" },
   { href: "/explore", label: "Explore" },
-  { href: "/collection", label: "Collection" },
+  { href: "/collection", label: "Library" },
 ];
 
 export function AppNav() {
@@ -55,15 +55,12 @@ export function AppNav() {
         </div>
         <div className="shrink-0">
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-[#ab9c8a]">{user.username}</span>
-              <button
-                onClick={logout}
-                className="text-sm text-[#6f6255] hover:text-[#f4ede1] transition-colors"
-              >
-                Sign out
-              </button>
-            </div>
+            <button
+              onClick={logout}
+              className="text-sm text-[#6f6255] hover:text-[#f4ede1] transition-colors"
+            >
+              Sign out
+            </button>
           ) : (
             <Link
               href="/login"

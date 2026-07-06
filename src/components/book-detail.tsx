@@ -207,7 +207,7 @@ export function BookDetail({ book }: { book: Book }) {
       {/* What people say */}
       {reviewsState === "loading" && (
         <>
-          <h3 className="text-sm font-semibold text-[#ab9c8a] mb-3">What people say</h3>
+          <h3 className="text-sm font-semibold text-[#ab9c8a] mb-3">What people have said</h3>
           <div className="space-y-3">
             {[1, 2].map((i) => (
               <div
@@ -228,7 +228,7 @@ export function BookDetail({ book }: { book: Book }) {
 
       {reviewsState === "done" && reviews.length > 0 && (
         <>
-          <h3 className="text-sm font-semibold text-[#ab9c8a] mb-3">What people say</h3>
+          <h3 className="text-sm font-semibold text-[#ab9c8a] mb-3">What people have said</h3>
           <div className="space-y-3">
             {reviews.map((r, i) => (
               <div key={i} className="bg-[#211a14] rounded-xl border border-[rgba(255,214,170,0.09)] p-4">
@@ -272,7 +272,7 @@ export function BookDetail({ book }: { book: Book }) {
             className="w-full max-w-sm bg-[#211a14] border border-[rgba(255,214,170,0.12)] rounded-2xl p-5"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 className="font-display italic text-lg text-[#f4ede1] mb-1">Add to my Collection</h3>
+            <h3 className="font-display italic text-lg text-[#f4ede1] mb-1">Add to my Library</h3>
             <p className="text-xs text-[#ab9c8a] mb-4">{book.title} — both fields are optional.</p>
 
             <label className="block text-xs font-medium text-[#ab9c8a] mb-1.5" htmlFor="dateRead">

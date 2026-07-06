@@ -40,14 +40,14 @@ export default function RegisterPage() {
   return (
     <main className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm md:max-w-md">
-        <h1 className="text-2xl font-semibold tracking-tight mb-1">
+        <h1 className="font-display italic text-2xl font-medium text-[#f4ede1] mb-1">
           Hazelnut
         </h1>
-        <p className="text-stone-500 text-sm mb-8">Create your library</p>
+        <p className="text-[#ab9c8a] text-sm mb-8">Create your library</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-1.5" htmlFor="username">
+            <label className="block text-sm font-medium text-[#ab9c8a] mb-1.5" htmlFor="username">
               Username
             </label>
             <input
@@ -58,12 +58,12 @@ export default function RegisterPage() {
               minLength={3}
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200/60 transition"
+              className="w-full rounded-lg border border-[rgba(255,214,170,0.12)] bg-white/5 px-3 py-2 text-sm text-[#f4ede1] placeholder:text-[#6f6255] outline-none focus:border-[#e0984a]/50 transition"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-1.5" htmlFor="password">
+            <label className="block text-sm font-medium text-[#ab9c8a] mb-1.5" htmlFor="password">
               Password
             </label>
             <input
@@ -74,27 +74,27 @@ export default function RegisterPage() {
               minLength={8}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-stone-300 bg-stone-50 px-3 py-2 text-sm text-stone-900 placeholder:text-stone-400 outline-none focus:border-stone-400 focus:ring-2 focus:ring-stone-200/60 transition"
+              className="w-full rounded-lg border border-[rgba(255,214,170,0.12)] bg-white/5 px-3 py-2 text-sm text-[#f4ede1] placeholder:text-[#6f6255] outline-none focus:border-[#e0984a]/50 transition"
             />
-            <p className="mt-1 text-xs text-stone-400">Minimum 8 characters</p>
+            <p className="mt-1 text-xs text-[#6f6255]">Minimum 8 characters</p>
           </div>
 
           {error && (
-            <p className="text-sm text-red-600">{error}</p>
+            <p className="text-sm text-red-400">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-stone-700 text-white py-2 text-sm font-medium hover:bg-stone-600 disabled:opacity-50 transition"
+            className="w-full rounded-lg bg-[#e0984a] hover:bg-[#f0ac63] text-[#1a1208] py-2 text-sm font-medium disabled:opacity-50 transition"
           >
             {loading ? "Creating account…" : "Create account"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-stone-500">
+        <p className="mt-6 text-center text-sm text-[#ab9c8a]">
           Already have an account?{" "}
-          <Link href="/login" className="text-stone-900 font-medium hover:underline">
+          <Link href="/login" className="text-[#e0984a] font-medium hover:underline">
             Sign in
           </Link>
         </p>
