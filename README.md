@@ -29,8 +29,18 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
+## Deploy on Render
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This repo includes a `render.yaml` Blueprint. In the Render dashboard, choose **New > Blueprint**, point it at this repo, and Render will pick up the web service definition (build: `npm ci && npm run build`, start: `npm run start`).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Before the first deploy, set these environment variables on the service (Render won't read them from `.env` — they're marked `sync: false` in the blueprint so you enter them in the dashboard):
+
+- `DATABASE_URL` — Supabase direct connection string (session mode, port 5432)
+- `OPENAI_API_KEY`
+- `JWT_SECRET` — generate with `openssl rand -base64 32`
+
+Notes:
+
+- `npm install` runs `prisma generate` automatically via the `postinstall` script, so the Prisma Client is built fresh on every deploy.
+- The app uses a single `pg` connection pool per instance against Supabase's direct (non-pooled) connection. This is fine at one instance; if you ever scale to multiple instances, switch `DATABASE_URL` to Supabase's pooled (pgbouncer, port 6543) connection string first.
+- `next start` reads `PORT` from the environment automatically, which Render sets for you.
