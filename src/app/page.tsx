@@ -82,9 +82,13 @@ export default function HomePage() {
     return (
       <main className="flex flex-col items-center justify-center min-h-[calc(100vh-56px)] px-4 pb-16">
         <div className="w-full max-w-2xl">
-          <h1 className="font-display italic text-4xl font-medium text-[#f4ede1] text-center mb-10 leading-snug pb-1">
-            Find your next great read
+          <h1 className="font-display italic text-4xl font-medium text-[#f4ede1] text-center leading-snug pb-1">
+            Your digital Library
           </h1>
+          <h4 className="font-display italic text-2xl font-medium text-[#f4ede1] text-center mb-10 leading-snug pb-1">
+            Find your next read
+          </h4>
+
 
           <form onSubmit={handleSearch}>
             <div className="flex items-center gap-3 bg-[#211a14] border border-[rgba(255,214,170,0.09)] rounded-full px-5 py-3.5 focus-within:border-[rgba(255,214,170,0.25)] focus-within:shadow-lg focus-within:shadow-black/30 transition-all">

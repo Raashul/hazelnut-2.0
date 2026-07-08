@@ -1,4 +1,19 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## What is this?
+
+Hazelnut is a personal library / reading-tracker app. You can browse an "Explore" page of books organized by genre, add books to your own collection, and track what you've read vs. what's on your future reading list.
+
+Built with Next.js (App Router), Prisma + Supabase (Postgres) for storage, and the OpenAI API for the AI-assisted parts of the app.
+
+### How the Explore catalog works
+
+The Explore page's per-genre book lists aren't fetched live — they're pre-populated into the database and periodically refreshed by two manual scripts:
+
+- **`npm run explore:populate`** — for each genre in `src/lib/genres.ts`, queries the OpenLibrary API for up to 100 books on that subject and adds new ones to the catalog (`BooksCache` + `BookGenre` tables). Books with no rating or a rating of 1 or below are skipped. Existing books already tagged for a genre are left untouched, so this is safe to rerun — it only adds new books, it doesn't reset or remove old ones.
+- **`npm run explore:refresh`** — for each genre, picks a fresh random selection of 40 books to actually display on the Explore page, weighted toward higher-rated books. This draws from whatever's currently in the catalog (built by `explore:populate`) — it doesn't add new books itself, just changes which ones are shown.
+
+**To refresh the Explore page with new books:** run `npm run explore:populate` first to pull in fresh titles from OpenLibrary, then `npm run explore:refresh` to shuffle what's actually displayed. Running `explore:refresh` alone (without `populate`) just re-shuffles the existing catalog without adding anything new.
+
+Both scripts are manually triggered — there's no cron job or scheduled task running them automatically.
 
 ## Getting Started
 
