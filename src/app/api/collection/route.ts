@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAuth } from "@/lib/auth";
+import { ReadStatus } from "@/generated/prisma/client";
 
 export async function GET(req: NextRequest) {
   const auth = await requireAuth(req);
@@ -11,16 +12,22 @@ export async function GET(req: NextRequest) {
     include: { book: true },
   });
 
-  // Dated entries first (most recently read first), then undated entries
-  // alphabetically by title.
-  const sorted = [...entries].sort((a, b) => {
+  const read = entries.filter((e) => e.status === "READ");
+  const futureRead = entries.filter((e) => e.status === "FUTURE_READ");
+
+  // READ: dated entries first (most recently read first), then undated
+  // entries alphabetically by title.
+  read.sort((a, b) => {
     if (a.dateRead && b.dateRead) return b.dateRead.getTime() - a.dateRead.getTime();
     if (a.dateRead && !b.dateRead) return -1;
     if (!a.dateRead && b.dateRead) return 1;
     return a.book.title.localeCompare(b.book.title);
   });
 
-  return NextResponse.json({ entries: sorted });
+  // FUTURE_READ: most-recently-added first.
+  futureRead.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+  return NextResponse.json({ entries: [...read, ...futureRead] });
 }
 
 export async function POST(req: NextRequest) {
@@ -44,7 +51,13 @@ export async function POST(req: NextRequest) {
     description,
     dateRead,
     review,
+    status,
   } = body;
+
+  if (status !== undefined && status !== "READ" && status !== "FUTURE_READ") {
+    return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+  }
+  const readStatus: ReadStatus = status === "FUTURE_READ" ? "FUTURE_READ" : "READ";
 
   // Book cache row may not exist yet if this book was never searched/browsed
   // through the normal caching paths — upsert best-effort like other routes.
@@ -75,8 +88,9 @@ export async function POST(req: NextRequest) {
       data: {
         userId: auth.userId,
         isbn13,
-        dateRead: dateRead ? new Date(dateRead) : null,
-        review: review || null,
+        status: readStatus,
+        dateRead: readStatus === "READ" && dateRead ? new Date(dateRead) : null,
+        review: readStatus === "READ" && review ? review : null,
       },
     });
     return NextResponse.json({ entry }, { status: 201 });

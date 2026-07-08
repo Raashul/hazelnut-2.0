@@ -39,12 +39,14 @@ export function BookDetail({ book }: { book: Book }) {
   const { user, token } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [inCollection, setInCollection] = useState(false);
+  const [status, setStatus] = useState<"READ" | "FUTURE_READ" | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [dateRead, setDateRead] = useState("");
   const [review, setReview] = useState("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [savingFutureRead, setSavingFutureRead] = useState(false);
+  const [futureReadError, setFutureReadError] = useState("");
 
   useEffect(() => {
     if (!user || !token) return;
@@ -52,7 +54,7 @@ export function BookDetail({ book }: { book: Book }) {
     authFetch(`/api/collection/${encodeURIComponent(book.isbn13)}`, token)
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) setInCollection(!!data.inCollection);
+        if (!cancelled) setStatus(data.status ?? null);
       })
       .catch(() => {});
     return () => {
@@ -85,6 +87,7 @@ export function BookDetail({ book }: { book: Book }) {
           publishedYear: book.publishedYear,
           pageCount: book.pageCount,
           description: book.description,
+          status: "READ",
           dateRead: dateRead || null,
           review: review || null,
         }),
@@ -94,7 +97,7 @@ export function BookDetail({ book }: { book: Book }) {
         setSaveError(data?.error ?? "Something went wrong. Please try again.");
         return;
       }
-      setInCollection(true);
+      setStatus("READ");
       setModalOpen(false);
       setDateRead("");
       setReview("");
@@ -102,6 +105,43 @@ export function BookDetail({ book }: { book: Book }) {
       setSaveError("Something went wrong. Please try again.");
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleAddToFutureRead() {
+    if (!user) {
+      router.push(`/login?next=${encodeURIComponent(pathname)}`);
+      return;
+    }
+    setSavingFutureRead(true);
+    setFutureReadError("");
+    try {
+      const res = await authFetch("/api/collection", token, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          isbn13: book.isbn13,
+          volumeId: book.volumeId,
+          title: book.title,
+          authors: book.authors,
+          coverUrl: book.coverUrl,
+          rating: book.rating,
+          publishedYear: book.publishedYear,
+          pageCount: book.pageCount,
+          description: book.description,
+          status: "FUTURE_READ",
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setFutureReadError(data?.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+      setStatus("FUTURE_READ");
+    } catch {
+      setFutureReadError("Something went wrong. Please try again.");
+    } finally {
+      setSavingFutureRead(false);
     }
   }
 
@@ -140,7 +180,7 @@ export function BookDetail({ book }: { book: Book }) {
       {/* Metadata card */}
       <div className="bg-[#211a14] rounded-2xl border border-[rgba(255,214,170,0.09)] p-5 mb-6">
         <div className="flex justify-end mb-3">
-          {inCollection ? (
+          {status === "READ" && (
             <button
               aria-label="Already in your collection"
               title="Already in your collection"
@@ -150,7 +190,19 @@ export function BookDetail({ book }: { book: Book }) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" />
               </svg>
             </button>
-          ) : (
+          )}
+          {status === "FUTURE_READ" && (
+            <button
+              aria-label="Saved for later — in your Future Read list"
+              title="Saved for later — in your Future Read list"
+              className="w-9 h-9 rounded-full flex items-center justify-center bg-white/[0.08] text-[#ab9c8a] cursor-default"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 4h12a1 1 0 011 1v15l-7-4-7 4V5a1 1 0 011-1z" />
+              </svg>
+            </button>
+          )}
+          {status === null && (
             <button
               onClick={handleAddClick}
               className="inline-flex items-center gap-1.5 rounded-full bg-white/5 hover:bg-white/10 text-[#ab9c8a] hover:text-[#f4ede1] text-xs font-medium pl-2.5 pr-3 py-2 transition"
@@ -202,6 +254,22 @@ export function BookDetail({ book }: { book: Book }) {
             )}
           </div>
         </div>
+
+        {status === null && (
+          <div className="mt-4 pt-4 border-t border-[rgba(255,214,170,0.09)]">
+            <button
+              onClick={handleAddToFutureRead}
+              disabled={savingFutureRead}
+              className="inline-flex items-center gap-1.5 rounded-full bg-white/5 hover:bg-white/10 text-[#ab9c8a] hover:text-[#f4ede1] text-xs font-medium pl-2.5 pr-3 py-2 transition disabled:opacity-50"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
+              </svg>
+              {savingFutureRead ? "Saving…" : "Add to my Future Read"}
+            </button>
+            {futureReadError && <p className="text-xs text-red-400 mt-2">{futureReadError}</p>}
+          </div>
+        )}
       </div>
 
       {/* What people say */}
@@ -252,9 +320,6 @@ export function BookDetail({ book }: { book: Book }) {
                         Source
                       </a>
                     )}
-                    <span className="text-xs text-[#ab9c8a] bg-white/5 border border-[rgba(255,214,170,0.09)] rounded px-1.5 py-0.5 capitalize">
-                      {r.verification_status}
-                    </span>
                   </div>
                 </div>
               </div>

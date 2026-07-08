@@ -21,6 +21,11 @@ enum VerificationStatus {
   FAKE
 }
 
+enum ReadStatus {
+  READ
+  FUTURE_READ
+}
+
 // ─── Global / shared tables ───────────────────────────────────────────────────
 
 model BooksCache {
@@ -117,15 +122,17 @@ model User {
   @@map("users")
 }
 
-// A book the user has already read, added from the book detail view.
-// Optional dateRead / review — both filled in only if the user chooses to.
+// A book the user has read or saved for later, added from the book detail
+// view. dateRead / review only apply to READ entries — both are optional
+// even then, and always null for FUTURE_READ entries.
 model CollectionEntry {
-  id        String    @id @default(cuid())
+  id        String     @id @default(cuid())
   userId    String
   isbn13    String
+  status    ReadStatus @default(READ)
   dateRead  DateTime?
   review    String?
-  createdAt DateTime  @default(now())
+  createdAt DateTime   @default(now())
 
   user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   book BooksCache @relation(fields: [isbn13], references: [isbn13])
