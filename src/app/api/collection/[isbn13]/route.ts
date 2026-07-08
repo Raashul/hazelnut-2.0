@@ -15,5 +15,5 @@ export async function GET(
     where: { userId_isbn13: { userId: auth.userId, isbn13 } },
   });
 
-  return NextResponse.json({ inCollection: !!entry });
+  return NextResponse.json({ status: entry?.status ?? null });
 }
