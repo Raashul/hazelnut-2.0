@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import { useAuth } from "@/context/auth-context";
 import { authFetch } from "@/lib/api-client";
 import { Book, BookDetail } from "@/components/book-detail";
+import { BookCover } from "@/components/book-cover";
 
 interface CollectionEntry {
   id: string;
@@ -135,18 +135,13 @@ export default function CollectionPage() {
                         : "bg-[#211a14] border-[rgba(255,214,170,0.09)] hover:bg-[#2a2119] hover:border-[rgba(255,214,170,0.18)]"
                     }`}
                   >
-                    {entry.book.coverUrl ? (
-                      <Image
-                        src={entry.book.coverUrl}
-                        alt={entry.book.title}
-                        width={120}
-                        height={170}
-                        className="rounded-lg object-cover w-full aspect-[2/3] mb-2"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="rounded-lg bg-white/[0.05] w-full aspect-[2/3] mb-2" />
-                    )}
+                    <BookCover
+                      src={entry.book.coverUrl}
+                      alt={entry.book.title}
+                      width={120}
+                      height={170}
+                      className="rounded-lg w-full aspect-[2/3] mb-2"
+                    />
                     <p className="font-display font-medium text-sm text-[#f4ede1] leading-snug line-clamp-2">
                       {entry.book.title}
                     </p>
@@ -155,11 +150,6 @@ export default function CollectionPage() {
                     </p>
                     {entry.dateRead && (
                       <p className="text-xs text-[#e0984a] mt-1.5">Read {formatDateRead(entry.dateRead)}</p>
-                    )}
-                    {entry.review && (
-                      <p className="text-xs text-[#f4ede1]/80 italic leading-relaxed mt-2 line-clamp-3">
-                        &ldquo;{entry.review}&rdquo;
-                      </p>
                     )}
                   </button>
                 );

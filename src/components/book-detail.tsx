@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/context/auth-context";
 import { authFetch } from "@/lib/api-client";
+import { BookCover } from "@/components/book-cover";
 
 export interface Book {
   isbn13: string;
@@ -25,6 +25,14 @@ export interface Review {
   source_url?: string;
   source_date?: string;
   verification_status: "unverified" | "verified" | "fake";
+}
+
+function formatDateRead(dateRead: string): string {
+  return new Date(dateRead).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 }
 
 // Metadata card + "What people say" enrichment section, driven by the same
@@ -48,19 +56,66 @@ export function BookDetail({ book }: { book: Book }) {
   const [savingFutureRead, setSavingFutureRead] = useState(false);
   const [futureReadError, setFutureReadError] = useState("");
 
+  const [noteDateRead, setNoteDateRead] = useState<string | null>(null);
+  const [noteReview, setNoteReview] = useState<string | null>(null);
+  const [noteEditing, setNoteEditing] = useState(false);
+  const [editDateRead, setEditDateRead] = useState("");
+  const [editReview, setEditReview] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [noteError, setNoteError] = useState("");
+
   useEffect(() => {
     if (!user || !token) return;
     let cancelled = false;
     authFetch(`/api/collection/${encodeURIComponent(book.isbn13)}`, token)
       .then((res) => res.json())
       .then((data) => {
-        if (!cancelled) setStatus(data.status ?? null);
+        if (!cancelled) {
+          setStatus(data.status ?? null);
+          setNoteDateRead(data.dateRead ?? null);
+          setNoteReview(data.review ?? null);
+        }
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [book.isbn13, user, token]);
+
+  function openNoteEdit() {
+    setEditDateRead(noteDateRead ? noteDateRead.slice(0, 10) : "");
+    setEditReview(noteReview ?? "");
+    setNoteError("");
+    setNoteEditing(true);
+  }
+
+  async function handleSaveNote() {
+    setNoteSaving(true);
+    setNoteError("");
+    try {
+      const res = await authFetch(`/api/collection/${encodeURIComponent(book.isbn13)}`, token, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          dateRead: editDateRead || null,
+          review: editReview || null,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setNoteError(data?.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+      const data = await res.json();
+      setNoteDateRead(data.entry?.dateRead ?? null);
+      setNoteReview(data.entry?.review ?? null);
+      setNoteEditing(false);
+    } catch {
+      setNoteError("Something went wrong. Please try again.");
+    } finally {
+      setNoteSaving(false);
+    }
+  }
 
   function handleAddClick() {
     if (!user) {
@@ -215,18 +270,13 @@ export function BookDetail({ book }: { book: Book }) {
           )}
         </div>
         <div className="flex gap-5">
-          {book.coverUrl ? (
-            <Image
-              src={book.coverUrl}
-              alt={book.title}
-              width={96}
-              height={136}
-              className="rounded-lg object-cover shrink-0 shadow-sm"
-              unoptimized
-            />
-          ) : (
-            <div className="w-24 h-[136px] rounded-lg bg-white/[0.05] shrink-0" />
-          )}
+          <BookCover
+            src={book.coverUrl}
+            alt={book.title}
+            width={96}
+            height={136}
+            className="w-24 h-[136px] rounded-lg shadow-sm"
+          />
           <div className="min-w-0">
             <h2 className="font-display italic font-medium text-xl text-[#f4ede1] leading-snug mb-1">
               {book.title}
@@ -249,9 +299,6 @@ export function BookDetail({ book }: { book: Book }) {
                 </span>
               )}
             </div>
-            {book.description && (
-              <p className="text-xs text-[#ab9c8a] leading-relaxed line-clamp-4">{book.description}</p>
-            )}
           </div>
         </div>
 
@@ -271,6 +318,98 @@ export function BookDetail({ book }: { book: Book }) {
           </div>
         )}
       </div>
+
+      {/* What you thought of this book */}
+      {status === "READ" && (
+        <div className="bg-[#211a14] rounded-2xl border border-[#e0984a]/25 p-5 mb-6">
+          <h3 className="text-sm font-semibold text-[#f0c894] mb-3">What you thought of this book</h3>
+
+          {!noteEditing && !noteReview && !noteDateRead && (
+            <>
+              <p className="text-sm text-[#6f6255] italic mb-3">You haven&rsquo;t added a note for this book yet.</p>
+              <button
+                onClick={openNoteEdit}
+                className="inline-flex items-center gap-1.5 rounded-full bg-[#e0984a] hover:bg-[#f0ac63] text-[#1a1208] text-xs font-medium pl-2.5 pr-3 py-2 transition"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m6-6H6" />
+                </svg>
+                Add your thoughts
+              </button>
+            </>
+          )}
+
+          {!noteEditing && (noteReview || noteDateRead) && (
+            <>
+              <div className="flex items-start justify-between gap-3">
+                {noteDateRead ? (
+                  <p className="text-xs text-[#e0984a] font-medium mb-2">Read {formatDateRead(noteDateRead)}</p>
+                ) : (
+                  <span />
+                )}
+                <button
+                  onClick={openNoteEdit}
+                  className="shrink-0 inline-flex items-center gap-1 text-xs text-[#ab9c8a] hover:text-[#f4ede1] transition"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2v-5m-1.5-9.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 8.5-8.5z" />
+                  </svg>
+                  Edit
+                </button>
+              </div>
+              {noteReview && (
+                <p className="text-sm text-[#f4ede1]/90 italic leading-relaxed">&ldquo;{noteReview}&rdquo;</p>
+              )}
+            </>
+          )}
+
+          {noteEditing && (
+            <>
+              <label className="block text-xs font-medium text-[#ab9c8a] mb-1.5" htmlFor="noteDateRead">
+                Date read
+              </label>
+              <input
+                id="noteDateRead"
+                type="date"
+                value={editDateRead}
+                onChange={(e) => setEditDateRead(e.target.value)}
+                className="w-full mb-4 rounded-lg bg-white/5 border border-[rgba(255,214,170,0.12)] px-3 py-2 text-sm text-[#f4ede1] outline-none focus:border-[#e0984a]/50 transition"
+              />
+
+              <label className="block text-xs font-medium text-[#ab9c8a] mb-1.5" htmlFor="noteReview">
+                Your note
+              </label>
+              <textarea
+                id="noteReview"
+                rows={5}
+                value={editReview}
+                onChange={(e) => setEditReview(e.target.value)}
+                placeholder="What did you think?"
+                className="w-full mb-4 rounded-lg bg-white/5 border border-[rgba(255,214,170,0.12)] px-3 py-2 text-sm text-[#f4ede1] placeholder:text-[#6f6255] outline-none focus:border-[#e0984a]/50 transition resize-none"
+              />
+
+              {noteError && <p className="text-sm text-red-400 mb-3">{noteError}</p>}
+
+              <div className="flex gap-2 justify-end">
+                <button
+                  onClick={() => setNoteEditing(false)}
+                  disabled={noteSaving}
+                  className="px-4 py-2 rounded-full text-sm text-[#ab9c8a] hover:text-[#f4ede1] hover:bg-white/5 transition disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveNote}
+                  disabled={noteSaving}
+                  className="px-4 py-2 rounded-full text-sm font-medium bg-[#e0984a] hover:bg-[#f0ac63] text-[#1a1208] transition disabled:opacity-50"
+                >
+                  {noteSaving ? "Saving…" : "Save"}
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
 
       {/* What people say */}
       {reviewsState === "loading" && (

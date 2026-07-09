@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef, FormEvent } from "react";
-import Image from "next/image";
 import { Book, BookDetail } from "@/components/book-detail";
+import { BookCover } from "@/components/book-cover";
 
 type SearchState = "idle" | "loading" | "results" | "detail" | "empty" | "error";
 
@@ -193,18 +193,13 @@ export default function HomePage() {
                   {selected && (
                     <span className="absolute left-0 top-2.5 bottom-2.5 w-[3px] rounded-full bg-[#e0984a]" />
                   )}
-                  {book.coverUrl ? (
-                    <Image
-                      src={book.coverUrl}
-                      alt={book.title}
-                      width={44}
-                      height={62}
-                      className="rounded object-cover shrink-0"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="w-11 h-[62px] rounded bg-white/[0.05] shrink-0" />
-                  )}
+                  <BookCover
+                    src={book.coverUrl}
+                    alt={book.title}
+                    width={44}
+                    height={62}
+                    className="w-11 h-[62px] rounded"
+                  />
                   <div className="min-w-0">
                     <p className="font-display font-medium text-[15px] text-[#f4ede1] truncate">{book.title}</p>
                     <p className="text-xs text-[#ab9c8a] truncate mt-0.5">{book.authors.join(", ")}</p>

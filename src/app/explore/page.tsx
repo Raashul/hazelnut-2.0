@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { BookCover } from "@/components/book-cover";
 
 interface PreviewBook {
   volumeId: string;
@@ -140,18 +140,13 @@ function BookCard({ book, genreSlug }: { book: PreviewBook; genreSlug: string })
         transition-all duration-200 relative z-0 hover:z-10
       "
     >
-      {book.coverUrl ? (
-        <Image
-          src={book.coverUrl}
-          alt={book.title}
-          width={114}
-          height={171}
-          className="rounded-lg object-cover w-full aspect-[2/3] mb-2"
-          unoptimized
-        />
-      ) : (
-        <div className="rounded-lg bg-white/[0.05] w-full aspect-[2/3] mb-2" />
-      )}
+      <BookCover
+        src={book.coverUrl}
+        alt={book.title}
+        width={114}
+        height={171}
+        className="rounded-lg w-full aspect-[2/3] mb-2"
+      />
       <p className="text-[12px] font-medium text-[#f4ede1] leading-snug line-clamp-2 mb-0.5">
         {book.title}
       </p>

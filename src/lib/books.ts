@@ -37,18 +37,23 @@ function extractIsbn13(isbns: string[] | undefined): string | null {
   return isbns.find((id) => id.length === 13 && (id.startsWith("978") || id.startsWith("979"))) ?? null;
 }
 
-function coverUrl(coverId: number | undefined): string | null {
-  if (!coverId) return null;
-  return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+function coverUrl(coverId: number | undefined, isbn13: string | null): string | null {
+  if (coverId) return `https://covers.openlibrary.org/b/id/${coverId}-M.jpg`;
+  // OL search doesn't always return cover_i even when an edition has a cover.
+  // Fall back to the ISBN-keyed endpoint; `default=false` makes it 404 (instead
+  // of a 1x1 placeholder gif) when no cover exists, so the UI's onError handles it.
+  if (isbn13) return `https://covers.openlibrary.org/b/isbn/${isbn13}-M.jpg?default=false`;
+  return null;
 }
 
 export function olDocToBook(doc: OLSearchDoc): BookResult {
+  const isbn13 = extractIsbn13(doc.isbn);
   return {
-    isbn13: extractIsbn13(doc.isbn),
+    isbn13,
     volumeId: doc.key,
     title: doc.title ?? "Unknown title",
     authors: doc.author_name ?? [],
-    coverUrl: coverUrl(doc.cover_i),
+    coverUrl: coverUrl(doc.cover_i, isbn13),
     rating: doc.ratings_average ? Math.round(doc.ratings_average * 10) / 10 : null,
     publishedYear: doc.first_publish_year ?? null,
     pageCount: doc.number_of_pages_median ?? null,

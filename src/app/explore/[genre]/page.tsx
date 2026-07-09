@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image";
 import { Book, BookDetail } from "@/components/book-detail";
+import { BookCover } from "@/components/book-cover";
 
 type LoadState = "loading" | "done" | "error" | "not-found";
 
@@ -119,18 +119,13 @@ function GenreDetail({ genreSlug }: { genreSlug: string }) {
                       : "bg-[#211a14] border-[rgba(255,214,170,0.09)] hover:bg-[#2a2119] hover:border-[rgba(255,214,170,0.18)]"
                   }`}
                 >
-                  {book.coverUrl ? (
-                    <Image
-                      src={book.coverUrl}
-                      alt={book.title}
-                      width={120}
-                      height={170}
-                      className="rounded-lg object-cover w-full aspect-[2/3] mb-2"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="rounded-lg bg-white/[0.05] w-full aspect-[2/3] mb-2" />
-                  )}
+                  <BookCover
+                    src={book.coverUrl}
+                    alt={book.title}
+                    width={120}
+                    height={170}
+                    className="rounded-lg w-full aspect-[2/3] mb-2"
+                  />
                   <p className="font-display font-medium text-sm text-[#f4ede1] truncate">{book.title}</p>
                   <p className="text-xs text-[#ab9c8a] truncate mt-0.5">{book.authors.join(", ")}</p>
                   {book.rating && (
