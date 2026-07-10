@@ -3,20 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { BookCover } from "@/components/book-cover";
-
-interface PreviewBook {
-  volumeId: string;
-  title: string;
-  authors: string[];
-  coverUrl: string | null;
-  rating: number | null;
-}
+import { Book } from "@/components/book-detail";
+import { BookOverlay } from "@/components/book-overlay";
 
 interface GenreRow {
   slug: string;
   label: string;
   bookCount: number;
-  books: PreviewBook[];
+  books: Book[];
 }
 
 type LoadState = "loading" | "done" | "error";
@@ -24,6 +18,7 @@ type LoadState = "loading" | "done" | "error";
 export default function ExplorePage() {
   const [genres, setGenres] = useState<GenreRow[]>([]);
   const [state, setState] = useState<LoadState>("loading");
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,8 +45,10 @@ export default function ExplorePage() {
         <p className="text-sm text-red-400">Couldn&rsquo;t load genres. Please try again.</p>
       )}
       {state === "done" && genres.map((genre) => (
-        <GenreSection key={genre.slug} genre={genre} />
+        <GenreSection key={genre.slug} genre={genre} onSelectBook={setSelectedBook} />
       ))}
+
+      <BookOverlay book={selectedBook} onClose={() => setSelectedBook(null)} />
     </main>
   );
 }
@@ -76,11 +73,16 @@ function LoadingSkeleton() {
   );
 }
 
-function GenreSection({ genre }: { genre: GenreRow }) {
+function GenreSection({ genre, onSelectBook }: { genre: GenreRow; onSelectBook: (book: Book) => void }) {
   return (
     <section className="mb-10">
       <div className="flex items-baseline gap-3 mb-3">
-        <h2 className="font-display text-[19px] font-medium text-[#f4ede1]">{genre.label}</h2>
+        <Link
+          href={`/explore/${genre.slug}`}
+          className="font-display text-[19px] font-medium text-[#f4ede1] hover:text-[#f0c894] transition-colors"
+        >
+          {genre.label}
+        </Link>
         <span className="text-xs text-[#6f6255]">{genre.bookCount} book{genre.bookCount !== 1 ? "s" : ""}</span>
         <Link
           href={`/explore/${genre.slug}`}
@@ -94,7 +96,7 @@ function GenreSection({ genre }: { genre: GenreRow }) {
       <div className="flex gap-3 overflow-x-auto py-3 -my-3 scrollbar-none">
 
         {genre.books.map((book) => (
-          <BookCard key={book.volumeId} book={book} genreSlug={genre.slug} />
+          <BookCard key={book.volumeId} book={book} onSelect={onSelectBook} />
         ))}
 
         {/* Show More card */}
@@ -127,12 +129,14 @@ function GenreSection({ genre }: { genre: GenreRow }) {
   );
 }
 
-function BookCard({ book, genreSlug }: { book: PreviewBook; genreSlug: string }) {
+function BookCard({ book, onSelect }: { book: Book; onSelect: (book: Book) => void }) {
   return (
-    <Link
-      href={`/explore/${genreSlug}`}
+    <button
+      type="button"
+      data-explore-book-card
+      onClick={() => onSelect(book)}
       className="
-        flex-none w-[130px] cursor-pointer rounded-xl p-2
+        flex-none w-[130px] text-left cursor-pointer rounded-xl p-2
         bg-[#211a14] border border-[rgba(255,214,170,0.09)]
         hover:bg-[#2a2119] hover:border-[rgba(255,214,170,0.25)]
         hover:scale-[1.09] hover:-translate-y-1
@@ -156,6 +160,6 @@ function BookCard({ book, genreSlug }: { book: PreviewBook; genreSlug: string })
       {book.rating && (
         <span className="text-[11px] text-[#f0c894]">★ {book.rating}</span>
       )}
-    </Link>
+    </button>
   );
 }

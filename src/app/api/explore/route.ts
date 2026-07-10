@@ -32,11 +32,15 @@ export async function GET() {
       label: g.label,
       bookCount: countByGenre[g.slug] ?? 0,
       books: (booksByGenre[g.slug] ?? []).map((eb) => ({
+        isbn13: eb.book.isbn13,
         volumeId: eb.book.volumeId,
         title: eb.book.title,
         authors: eb.book.authors,
         coverUrl: eb.book.coverUrl,
         rating: eb.book.rating,
+        publishedYear: eb.book.publishedYear,
+        pageCount: eb.book.pageCount,
+        description: eb.book.description,
       })),
     }));
 
