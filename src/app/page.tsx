@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, FormEvent } from "react";
+import { useState, useRef, useEffect, FormEvent } from "react";
 import { Book, BookDetail } from "@/components/book-detail";
 import { BookCover } from "@/components/book-cover";
 
@@ -71,11 +71,17 @@ export default function HomePage() {
 
   function resetToIdle() {
     setState("idle");
+    setQuery("");
     setResults([]);
     setTotal(0);
     setSelectedBook(null);
     setTimeout(() => inputRef.current?.focus(), 50);
   }
+
+  useEffect(() => {
+    window.addEventListener("hazelnut:reset-home", resetToIdle);
+    return () => window.removeEventListener("hazelnut:reset-home", resetToIdle);
+  }, []);
 
   // ── Hero states: idle, loading, empty, error ──────────────────────────
   if (state === "idle" || state === "loading" || state === "empty" || state === "error") {

@@ -109,7 +109,7 @@ export default function CollectionPage() {
                 : "border-transparent text-[#ab9c8a] hover:text-[#f4ede1]"
             }`}
           >
-            {t.label}
+            {t.label} ({entries.filter((entry) => entry.status === t.id).length})
           </button>
         ))}
       </div>

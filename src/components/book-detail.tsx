@@ -152,7 +152,10 @@ export function BookDetail({ book }: { book: Book }) {
         setSaveError(data?.error ?? "Something went wrong. Please try again.");
         return;
       }
+      const data = await res.json();
       setStatus("READ");
+      setNoteDateRead(data.entry?.dateRead ?? null);
+      setNoteReview(data.entry?.review ?? null);
       setModalOpen(false);
       setDateRead("");
       setReview("");

@@ -31,11 +31,20 @@ export function AppNav() {
     );
   }
 
+  function handleLogoClick() {
+    // Clicking "/" while already on "/" is a no-op for next/link (same route,
+    // no remount), so the home page's local search state would otherwise be
+    // stuck on results/detail. Nudge it back to the landing search bar.
+    if (pathname === "/") {
+      window.dispatchEvent(new Event("hazelnut:reset-home"));
+    }
+  }
+
   return (
     <>
       {/* ── Desktop: top nav ── */}
       <nav className="hidden md:flex fixed top-0 inset-x-0 h-14 bg-[#15110d]/85 backdrop-blur-md border-b border-white/[0.07] z-50 items-center px-6">
-        <Link href="/" className="font-display italic text-lg text-[#f4ede1] mr-8 shrink-0">
+        <Link href="/" onClick={handleLogoClick} className="font-display italic text-lg text-[#f4ede1] mr-8 shrink-0">
           hazelnut
         </Link>
         <div className="flex items-center gap-1 flex-1">
@@ -43,6 +52,7 @@ export function AppNav() {
             <Link
               key={tab.href}
               href={tabHref(tab)}
+              onClick={tab.href === "/" ? handleLogoClick : undefined}
               className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 isActive(tab)
                   ? "bg-[#e0984a]/12 text-[#f0c894]"
@@ -79,6 +89,7 @@ export function AppNav() {
             <Link
               key={tab.href}
               href={tabHref(tab)}
+              onClick={tab.href === "/" ? handleLogoClick : undefined}
               className={`flex-1 py-3 text-center text-sm font-medium transition-colors ${
                 isActive(tab)
                   ? "text-[#f0c894]"
